@@ -52,9 +52,25 @@ All colors MUST be HSL.
 
     --sidebar-background: 215 40% 16%;
 
-    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-foreground: 210 40% 96%;
+    --sidebar-primary: 200 90% 55%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 215 35% 22%;
+    --sidebar-accent-foreground: 210 40% 96%;
+    --sidebar-border: 215 35% 22%;
+    --sidebar-ring: 200 90% 55%;
+  }
+}
 
-    --sidebar-primary: 240 5.9% 10%;
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+}
 
     --sidebar-primary-foreground: 0 0% 98%;
 
