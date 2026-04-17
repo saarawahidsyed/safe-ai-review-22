@@ -1,0 +1,83 @@
+import { useState } from "react";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { AppSidebar } from "@/components/AppSidebar";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Bell, Check, Download, FileText, MessageSquare, Search, X } from "lucide-react";
+import { cases } from "@/data/cases";
+import { CaseList } from "@/components/cases/CaseList";
+import { CaseHeader } from "@/components/cases/CaseHeader";
+import { PatientPanel } from "@/components/cases/PatientPanel";
+import { NarrativePanel } from "@/components/cases/NarrativePanel";
+import { MeddraTable } from "@/components/cases/MeddraTable";
+
+const Cases = () => {
+  const [selectedId, setSelectedId] = useState(cases[0].id);
+  const c = cases.find((x) => x.id === selectedId)!;
+
+  return (
+    <SidebarProvider>
+      <div className="min-h-screen flex w-full bg-[var(--gradient-subtle)]">
+        <AppSidebar />
+        <div className="flex-1 flex flex-col min-w-0">
+          <header className="h-14 border-b border-border bg-card/80 backdrop-blur sticky top-0 z-10 flex items-center px-4 gap-3">
+            <SidebarTrigger />
+            <div className="flex-1 max-w-md relative">
+              <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+              <Input placeholder="Search case ID, drug, event…" className="pl-9 h-9 bg-muted/40 border-transparent focus-visible:bg-background" />
+            </div>
+            <Button variant="ghost" size="icon" className="relative">
+              <Bell className="h-4 w-4" />
+              <span className="absolute top-2 right-2 h-1.5 w-1.5 rounded-full bg-destructive" />
+            </Button>
+            <div className="h-8 w-8 rounded-full bg-[var(--gradient-primary)] grid place-items-center text-primary-foreground text-xs font-semibold">
+              DR
+            </div>
+          </header>
+
+          <main className="flex-1 p-6 space-y-6 overflow-x-hidden">
+            <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-3">
+              <div>
+                <p className="text-xs uppercase tracking-wider text-muted-foreground font-medium">Pharmacovigilance / Case Review</p>
+                <h1 className="text-2xl font-semibold text-foreground mt-1">Individual Case Safety Reports</h1>
+                <p className="text-sm text-muted-foreground mt-1 max-w-2xl">
+                  Review ICSRs with AI-assisted narrative analysis. Every highlighted phrase is traceable to the model's prediction.
+                </p>
+              </div>
+              <div className="flex gap-2">
+                <Button variant="outline" size="sm" className="gap-1.5"><MessageSquare className="h-3.5 w-3.5" /> Add note</Button>
+                <Button variant="outline" size="sm" className="gap-1.5"><Download className="h-3.5 w-3.5" /> CIOMS export</Button>
+                <Button size="sm" className="gap-1.5"><FileText className="h-3.5 w-3.5" /> E2B(R3) report</Button>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-4">
+              <div>
+                <CaseList cases={cases} selectedId={selectedId} onSelect={setSelectedId} />
+              </div>
+
+              <div className="space-y-4 min-w-0">
+                <CaseHeader c={c} />
+
+                <div className="grid grid-cols-1 xl:grid-cols-[1fr_320px] gap-4">
+                  <NarrativePanel narrative={c.narrative} prediction={c.aiPrediction} />
+                  <PatientPanel c={c} />
+                </div>
+
+                <MeddraTable events={c.events} />
+
+                <div className="flex items-center gap-2 pt-2">
+                  <Button size="sm" className="gap-1.5"><Check className="h-3.5 w-3.5" /> Confirm causality</Button>
+                  <Button size="sm" variant="outline" className="gap-1.5"><X className="h-3.5 w-3.5" /> Reject signal</Button>
+                  <Button size="sm" variant="ghost" className="ml-auto">Forward to Medical Review</Button>
+                </div>
+              </div>
+            </div>
+          </main>
+        </div>
+      </div>
+    </SidebarProvider>
+  );
+};
+
+export default Cases;
