@@ -137,6 +137,57 @@ export type Database = {
         }
         Relationships: []
       }
+      signals: {
+        Row: {
+          case_count: number
+          chi_squared: number
+          confidence: number
+          created_at: string
+          drug: string
+          event_term: string
+          first_detected_at: string
+          id: string
+          last_detected_at: string
+          previous_case_count: number
+          prr: number
+          soc: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          case_count?: number
+          chi_squared?: number
+          confidence?: number
+          created_at?: string
+          drug: string
+          event_term: string
+          first_detected_at?: string
+          id?: string
+          last_detected_at?: string
+          previous_case_count?: number
+          prr?: number
+          soc?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          case_count?: number
+          chi_squared?: number
+          confidence?: number
+          created_at?: string
+          drug?: string
+          event_term?: string
+          first_detected_at?: string
+          id?: string
+          last_detected_at?: string
+          previous_case_count?: number
+          prr?: number
+          soc?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string

@@ -2,6 +2,8 @@ import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
+export type SignalStatus = "New" | "Reviewing" | "Validated" | "new" | "updated" | "resolved";
+
 export interface Signal {
   id: string;
   drug: string;
@@ -9,7 +11,8 @@ export interface Signal {
   confidence: number;
   severity: "Low" | "Moderate" | "High" | "Critical";
   cases: number;
-  status: "New" | "Reviewing" | "Validated";
+  status: SignalStatus;
+  detection?: "ai" | "statistical";
 }
 
 const severityStyle: Record<Signal["severity"], string> = {
@@ -17,6 +20,12 @@ const severityStyle: Record<Signal["severity"], string> = {
   Moderate: "bg-warning/15 text-warning",
   High: "bg-destructive/15 text-destructive",
   Critical: "bg-destructive text-destructive-foreground",
+};
+
+const statusStyle: Record<string, string> = {
+  new: "bg-primary/15 text-primary border-primary/30",
+  updated: "bg-warning/15 text-warning border-warning/30",
+  resolved: "bg-muted text-muted-foreground border-border",
 };
 
 interface Props {
@@ -74,7 +83,12 @@ export function SignalsTable({ signals, selectedId, onSelect }: Props) {
                 </td>
                 <td className="px-5 py-3 text-right tabular-nums text-foreground">{s.cases}</td>
                 <td className="px-5 py-3">
-                  <Badge variant="outline" className="font-normal">{s.status}</Badge>
+                  <Badge
+                    variant="outline"
+                    className={cn("font-normal capitalize", statusStyle[s.status as string])}
+                  >
+                    {s.status}
+                  </Badge>
                 </td>
               </tr>
             ))}
