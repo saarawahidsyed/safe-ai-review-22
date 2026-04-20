@@ -14,16 +14,166 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      case_decisions: {
+        Row: {
+          case_ref: string
+          created_at: string
+          decision: Database["public"]["Enums"]["causality_decision"]
+          id: string
+          rationale: string | null
+          user_id: string
+        }
+        Insert: {
+          case_ref: string
+          created_at?: string
+          decision: Database["public"]["Enums"]["causality_decision"]
+          id?: string
+          rationale?: string | null
+          user_id: string
+        }
+        Update: {
+          case_ref?: string
+          created_at?: string
+          decision?: Database["public"]["Enums"]["causality_decision"]
+          id?: string
+          rationale?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      case_notes: {
+        Row: {
+          body: string
+          case_ref: string
+          created_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          body: string
+          case_ref: string
+          created_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          body?: string
+          case_ref?: string
+          created_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      cases: {
+        Row: {
+          ai_prediction: Json
+          case_ref: string
+          created_at: string
+          created_by: string | null
+          events: Json
+          id: string
+          narrative: Json
+          patient: Json
+          seriousness: string[]
+          status: string
+          suspect_drug: Json
+          updated_at: string
+        }
+        Insert: {
+          ai_prediction?: Json
+          case_ref: string
+          created_at?: string
+          created_by?: string | null
+          events?: Json
+          id?: string
+          narrative?: Json
+          patient?: Json
+          seriousness?: string[]
+          status?: string
+          suspect_drug?: Json
+          updated_at?: string
+        }
+        Update: {
+          ai_prediction?: Json
+          case_ref?: string
+          created_at?: string
+          created_by?: string | null
+          events?: Json
+          id?: string
+          narrative?: Json
+          patient?: Json
+          seriousness?: string[]
+          status?: string
+          suspect_drug?: Json
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          display_name: string | null
+          id: string
+          organization: string | null
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          id: string
+          organization?: string | null
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          organization?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "medical_reviewer" | "reviewer"
+      causality_decision: "confirmed" | "rejected" | "forwarded"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +300,9 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "medical_reviewer", "reviewer"],
+      causality_decision: ["confirmed", "rejected", "forwarded"],
+    },
   },
 } as const
