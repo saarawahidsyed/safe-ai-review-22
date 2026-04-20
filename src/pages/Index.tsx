@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { KpiCard } from "@/components/dashboard/KpiCard";
@@ -8,8 +8,10 @@ import { TrendChart } from "@/components/dashboard/TrendChart";
 import { Button } from "@/components/ui/button";
 import { Activity, AlertTriangle, Bell, Brain, FileText, Search, ShieldAlert } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
 
-const signals: Signal[] = [
+const aiSignals: Signal[] = [
   { id: "s1", drug: "Apixaban", event: "Intracranial hemorrhage", confidence: 92, severity: "Critical", cases: 47, status: "New" },
   { id: "s2", drug: "Semaglutide", event: "Acute pancreatitis", confidence: 86, severity: "High", cases: 134, status: "Reviewing" },
   { id: "s3", drug: "Atorvastatin", event: "Rhabdomyolysis", confidence: 78, severity: "High", cases: 62, status: "Reviewing" },
@@ -81,9 +83,60 @@ const explanations: Record<string, { features: FeatureContribution[]; rationale:
 };
 
 const Index = () => {
+  const [detected, setDetected] = useState<Signal[]>([]);
+  const [running, setRunning] = useState(false);
   const [selectedId, setSelectedId] = useState<string>("s1");
-  const selected = signals.find((s) => s.id === selectedId)!;
-  const exp = explanations[selectedId];
+
+  const loadDetected = async () => {
+    const { data, error } = await supabase
+      .from("signals")
+      .select("id, drug, event_term, soc, case_count, prr, confidence, status")
+      .order("last_detected_at", { ascending: false });
+    if (error) return;
+    const mapped: Signal[] = (data ?? []).map((r) => {
+      const sev: Signal["severity"] =
+        r.prr >= 5 ? "Critical" : r.prr >= 3 ? "High" : r.prr >= 2 ? "Moderate" : "Low";
+      return {
+        id: r.id,
+        drug: r.drug,
+        event: r.event_term,
+        confidence: Math.round(r.confidence ?? 0),
+        severity: sev,
+        cases: r.case_count,
+        status: r.status as Signal["status"],
+        detection: "statistical",
+      };
+    });
+    setDetected(mapped);
+  };
+
+  useEffect(() => {
+    loadDetected();
+  }, []);
+
+  const runDetection = async () => {
+    setRunning(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("detect-signals");
+      if (error) throw error;
+      toast({
+        title: "Signal detection complete",
+        description: `Detected ${data?.detected ?? 0} • New ${data?.inserted ?? 0} • Updated ${data?.updated ?? 0} • Resolved ${data?.resolved ?? 0}`,
+      });
+      await loadDetected();
+    } catch (e: any) {
+      toast({ title: "Detection failed", description: e.message, variant: "destructive" });
+    } finally {
+      setRunning(false);
+    }
+  };
+
+  const signals: Signal[] = [...detected, ...aiSignals];
+  const selected = signals.find((s) => s.id === selectedId) ?? signals[0];
+  const exp = explanations[selected?.id] ?? {
+    rationale: `Statistical signal: PRR-based detection from ${selected?.cases ?? 0} ICSR reports linking ${selected?.drug} to ${selected?.event}.`,
+    features: [],
+  };
 
   return (
     <SidebarProvider>
@@ -118,7 +171,9 @@ const Index = () => {
               </div>
               <div className="flex gap-2">
                 <Button variant="outline" size="sm" className="gap-1.5"><FileText className="h-3.5 w-3.5" /> Export</Button>
-                <Button size="sm" className="gap-1.5"><Brain className="h-3.5 w-3.5" /> Run Analysis</Button>
+                <Button size="sm" className="gap-1.5" onClick={runDetection} disabled={running}>
+                  <Brain className="h-3.5 w-3.5" /> {running ? "Detecting…" : "Run Detection"}
+                </Button>
               </div>
             </div>
 
