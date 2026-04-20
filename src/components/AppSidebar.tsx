@@ -1,4 +1,4 @@
-import { Activity, AlertTriangle, FileSearch, LayoutDashboard, Microscope, Settings, ShieldCheck } from "lucide-react";
+import { Activity, AlertTriangle, FileSearch, LayoutDashboard, LogOut, Microscope, Settings, Shield, ShieldCheck } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import {
   Sidebar,
@@ -11,6 +11,8 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
+import { useAuth } from "@/contexts/AuthContext";
+import { Button } from "@/components/ui/button";
 
 const main = [
   { title: "Overview", url: "/", icon: LayoutDashboard },
@@ -27,6 +29,7 @@ const tools = [
 export function AppSidebar() {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
+  const { user, roles, signOut, hasRole } = useAuth();
 
   return (
     <Sidebar collapsible="icon">
@@ -75,9 +78,39 @@ export function AppSidebar() {
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
+              {hasRole("admin") && (
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild>
+                    <NavLink to="/admin" end className="hover:bg-sidebar-accent" activeClassName="bg-sidebar-accent text-sidebar-primary font-medium">
+                      <Shield className="h-4 w-4" />
+                      {!collapsed && <span>Admin</span>}
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              )}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+
+        {user && !collapsed && (
+          <div className="mt-auto px-3 py-3 border-t border-sidebar-border space-y-2">
+            <div className="text-[11px] text-sidebar-foreground/70 truncate">{user.email}</div>
+            <div className="flex flex-wrap gap-1">
+              {roles.length === 0 ? (
+                <span className="text-[10px] uppercase tracking-wider text-sidebar-foreground/50">No roles</span>
+              ) : (
+                roles.map((r) => (
+                  <span key={r} className="text-[10px] px-1.5 py-0.5 rounded bg-sidebar-accent text-sidebar-foreground/80 uppercase tracking-wider">
+                    {r.replace("_", " ")}
+                  </span>
+                ))
+              )}
+            </div>
+            <Button variant="ghost" size="sm" className="w-full justify-start gap-2 h-8" onClick={() => signOut()}>
+              <LogOut className="h-3.5 w-3.5" /> Sign out
+            </Button>
+          </div>
+        )}
       </SidebarContent>
     </Sidebar>
   );

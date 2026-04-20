@@ -3,13 +3,15 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Bell, Check, Download, FileText, MessageSquare, Search, X } from "lucide-react";
+import { Bell, Download, FileText, Search } from "lucide-react";
 import { cases } from "@/data/cases";
 import { CaseList } from "@/components/cases/CaseList";
 import { CaseHeader } from "@/components/cases/CaseHeader";
 import { PatientPanel } from "@/components/cases/PatientPanel";
 import { NarrativePanel } from "@/components/cases/NarrativePanel";
 import { MeddraTable } from "@/components/cases/MeddraTable";
+import { CaseNotes } from "@/components/cases/CaseNotes";
+import { CaseDecisionBar } from "@/components/cases/CaseDecisionBar";
 
 const Cases = () => {
   const [selectedId, setSelectedId] = useState(cases[0].id);
@@ -45,7 +47,6 @@ const Cases = () => {
                 </p>
               </div>
               <div className="flex gap-2">
-                <Button variant="outline" size="sm" className="gap-1.5"><MessageSquare className="h-3.5 w-3.5" /> Add note</Button>
                 <Button variant="outline" size="sm" className="gap-1.5"><Download className="h-3.5 w-3.5" /> CIOMS export</Button>
                 <Button size="sm" className="gap-1.5"><FileText className="h-3.5 w-3.5" /> E2B(R3) report</Button>
               </div>
@@ -66,11 +67,8 @@ const Cases = () => {
 
                 <MeddraTable events={c.events} />
 
-                <div className="flex items-center gap-2 pt-2">
-                  <Button size="sm" className="gap-1.5"><Check className="h-3.5 w-3.5" /> Confirm causality</Button>
-                  <Button size="sm" variant="outline" className="gap-1.5"><X className="h-3.5 w-3.5" /> Reject signal</Button>
-                  <Button size="sm" variant="ghost" className="ml-auto">Forward to Medical Review</Button>
-                </div>
+                <CaseNotes caseRef={c.id} />
+                <CaseDecisionBar caseRef={c.id} />
               </div>
             </div>
           </main>
