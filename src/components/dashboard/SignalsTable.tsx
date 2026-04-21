@@ -1,6 +1,9 @@
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { ArrowUpDown, ArrowUp, ArrowDown, Info } from "lucide-react";
+import { useMemo, useState } from "react";
 
 export type SignalStatus = "New" | "Reviewing" | "Validated" | "new" | "updated" | "resolved";
 
@@ -13,6 +16,10 @@ export interface Signal {
   cases: number;
   status: SignalStatus;
   detection?: "ai" | "statistical";
+  prr?: number;
+  ror?: number;
+  ic?: number;
+  ic_lower?: number;
 }
 
 const severityStyle: Record<Signal["severity"], string> = {
