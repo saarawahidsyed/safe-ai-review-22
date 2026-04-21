@@ -1,0 +1,116 @@
+import { useEffect, useMemo, useState } from "react";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { AppSidebar } from "@/components/AppSidebar";
+import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Search, AlertTriangle } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { cn } from "@/lib/utils";
+
+interface AggEvent {
+  term: string;
+  soc: string | null;
+  count: number;
+  drugs: Set<string>;
+  serious: number;
+}
+
+const Events = () => {
+  const [events, setEvents] = useState<AggEvent[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [q, setQ] = useState("");
+
+  useEffect(() => {
+    (async () => {
+      const { data } = await supabase
+        .from("cases")
+        .select("case_ref, suspect_drug, events, seriousness");
+      const map = new Map<string, AggEvent>();
+      for (const c of data ?? []) {
+        const drug = (c.suspect_drug as any)?.name ?? (c.suspect_drug as any)?.drug ?? "Unknown";
+        const isSerious = Array.isArray(c.seriousness) && c.seriousness.length > 0;
+        for (const ev of (c.events as any[]) ?? []) {
+          const term = ev?.term ?? ev?.pt ?? ev?.event;
+          if (!term) continue;
+          const soc = ev?.soc ?? null;
+          const cur = map.get(term) ?? { term, soc, count: 0, drugs: new Set(), serious: 0 };
+          cur.count += 1;
+          cur.drugs.add(drug);
+          if (isSerious) cur.serious += 1;
+          map.set(term, cur);
+        }
+      }
+      setEvents(Array.from(map.values()).sort((a, b) => b.count - a.count));
+      setLoading(false);
+    })();
+  }, []);
+
+  const filtered = useMemo(
+    () => events.filter((e) => !q || e.term.toLowerCase().includes(q.toLowerCase()) || (e.soc ?? "").toLowerCase().includes(q.toLowerCase())),
+    [events, q]
+  );
+
+  return (
+    <SidebarProvider>
+      <div className="min-h-screen flex w-full bg-[var(--gradient-subtle)]">
+        <AppSidebar />
+        <div className="flex-1 flex flex-col min-w-0">
+          <header className="h-14 border-b border-border bg-card/80 backdrop-blur sticky top-0 z-10 flex items-center px-4 gap-3">
+            <SidebarTrigger />
+            <div className="flex-1 max-w-md relative">
+              <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+              <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search MedDRA term or SOC…" className="pl-9 h-9 bg-muted/40 border-transparent" />
+            </div>
+          </header>
+          <main className="flex-1 p-6 space-y-4">
+            <div>
+              <p className="text-xs uppercase tracking-wider text-muted-foreground font-medium">Adverse Events</p>
+              <h1 className="text-2xl font-semibold text-foreground mt-1">MedDRA Event Catalog</h1>
+              <p className="text-sm text-muted-foreground mt-1">Aggregated events across all ICSR cases.</p>
+            </div>
+
+            <Card className="overflow-hidden shadow-[var(--shadow-card)]">
+              <div className="px-5 py-3 border-b border-border flex items-center justify-between">
+                <h3 className="text-sm font-semibold">Events</h3>
+                <Badge variant="outline" className="font-normal">{filtered.length}</Badge>
+              </div>
+              {loading ? (
+                <div className="p-10 text-center text-sm text-muted-foreground">Loading…</div>
+              ) : filtered.length === 0 ? (
+                <div className="p-10 text-center text-sm text-muted-foreground">No events found.</div>
+              ) : (
+                <table className="w-full text-sm">
+                  <thead className="bg-muted/40 text-xs uppercase tracking-wider text-muted-foreground">
+                    <tr>
+                      <th className="text-left px-5 py-3 font-medium">Preferred Term</th>
+                      <th className="text-left px-5 py-3 font-medium">SOC</th>
+                      <th className="text-right px-5 py-3 font-medium">Reports</th>
+                      <th className="text-right px-5 py-3 font-medium">Suspect Drugs</th>
+                      <th className="text-right px-5 py-3 font-medium">Serious</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filtered.map((e) => (
+                      <tr key={e.term} className="border-t border-border hover:bg-muted/30">
+                        <td className="px-5 py-3 font-medium text-foreground">{e.term}</td>
+                        <td className="px-5 py-3 text-muted-foreground">{e.soc ?? "—"}</td>
+                        <td className="px-5 py-3 text-right tabular-nums">{e.count}</td>
+                        <td className="px-5 py-3 text-right tabular-nums">{e.drugs.size}</td>
+                        <td className={cn("px-5 py-3 text-right tabular-nums", e.serious > 0 && "text-destructive font-medium")}>
+                          {e.serious > 0 ? <span className="inline-flex items-center gap-1"><AlertTriangle className="h-3 w-3" />{e.serious}</span> : "0"}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </Card>
+          </main>
+        </div>
+      </div>
+    </SidebarProvider>
+  );
+};
+
+export default Events;
