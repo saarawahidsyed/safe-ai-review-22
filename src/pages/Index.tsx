@@ -90,7 +90,7 @@ const Index = () => {
   const loadDetected = async () => {
     const { data, error } = await supabase
       .from("signals")
-      .select("id, drug, event_term, soc, case_count, prr, confidence, status")
+      .select("id, drug, event_term, soc, case_count, prr, ror, ic, ic_lower, confidence, status")
       .order("last_detected_at", { ascending: false });
     if (error) return;
     const mapped: Signal[] = (data ?? []).map((r) => {
@@ -105,6 +105,10 @@ const Index = () => {
         cases: r.case_count,
         status: r.status as Signal["status"],
         detection: "statistical",
+        prr: Number(r.prr ?? 0),
+        ror: Number((r as any).ror ?? 0),
+        ic: Number((r as any).ic ?? 0),
+        ic_lower: Number((r as any).ic_lower ?? 0),
       };
     });
     setDetected(mapped);
