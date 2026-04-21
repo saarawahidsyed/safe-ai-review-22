@@ -22,13 +22,6 @@ export interface Signal {
   ic_lower?: number;
 }
 
-const severityStyle: Record<Signal["severity"], string> = {
-  Low: "bg-muted text-muted-foreground",
-  Moderate: "bg-warning/15 text-warning",
-  High: "bg-destructive/15 text-destructive",
-  Critical: "bg-destructive text-destructive-foreground",
-};
-
 const statusStyle: Record<string, string> = {
   new: "bg-primary/15 text-primary border-primary/30",
   updated: "bg-warning/15 text-warning border-warning/30",
