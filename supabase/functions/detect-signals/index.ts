@@ -61,6 +61,9 @@ function computeSignals(rows: CaseRow[]) {
     soc: string | null;
     case_count: number;
     prr: number;
+    ror: number;
+    ic: number;
+    ic_lower: number;
     chi_squared: number;
     confidence: number;
   }> = [];
@@ -79,6 +82,14 @@ function computeSignals(rows: CaseRow[]) {
       const n = a + b + c + d;
       const expected = ((a + b) * (a + c)) / n;
       const chi = expected > 0 ? Math.pow(a - expected, 2) / expected : 0;
+      // Reporting Odds Ratio
+      const ror = (a * d) / (b * c);
+      // Bayesian Information Component (BCPNN, Bate et al.)
+      // IC = log2( a*N / ((a+b)*(a+c)) ) with +0.5 smoothing
+      const ic = Math.log2(((a + 0.5) * (n + 2)) / (((a + b) + 1) * ((a + c) + 1)));
+      // Approximate IC 95% lower bound (Norén-style variance)
+      const icVar = 1 / Math.LN2 ** 2 * (1 / (a + 0.5) - 1 / (n + 2) + 1 / ((a + b) + 1) + 1 / ((a + c) + 1));
+      const icLower = ic - 1.96 * Math.sqrt(Math.max(icVar, 0));
       // Simple confidence heuristic 0-100, saturates with PRR & case count
       const confidence = Math.min(99, Math.round(50 + 10 * Math.log2(prr) + 5 * Math.log2(a)));
 
@@ -89,6 +100,9 @@ function computeSignals(rows: CaseRow[]) {
           soc,
           case_count: a,
           prr: Number(prr.toFixed(2)),
+          ror: Number(ror.toFixed(2)),
+          ic: Number(ic.toFixed(2)),
+          ic_lower: Number(icLower.toFixed(2)),
           chi_squared: Number(chi.toFixed(2)),
           confidence: Math.max(0, confidence),
         });
@@ -136,6 +150,9 @@ Deno.serve(async (req) => {
           case_count: d.case_count,
           previous_case_count: 0,
           prr: d.prr,
+          ror: d.ror,
+          ic: d.ic,
+          ic_lower: d.ic_lower,
           chi_squared: d.chi_squared,
           confidence: d.confidence,
           status: "new",
@@ -156,6 +173,9 @@ Deno.serve(async (req) => {
             previous_case_count: prev.case_count,
             case_count: d.case_count,
             prr: d.prr,
+            ror: d.ror,
+            ic: d.ic,
+            ic_lower: d.ic_lower,
             chi_squared: d.chi_squared,
             confidence: d.confidence,
             status,
