@@ -61,6 +61,9 @@ function computeSignals(rows: CaseRow[]) {
     soc: string | null;
     case_count: number;
     prr: number;
+    ror: number;
+    ic: number;
+    ic_lower: number;
     chi_squared: number;
     confidence: number;
   }> = [];
