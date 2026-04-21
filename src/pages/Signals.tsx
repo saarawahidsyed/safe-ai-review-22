@@ -108,9 +108,9 @@ const Signals = () => {
       <div className="min-h-screen flex w-full bg-[var(--gradient-subtle)]">
         <AppSidebar />
         <div className="flex-1 flex flex-col min-w-0">
-          <header className="h-14 border-b border-border bg-card/80 backdrop-blur sticky top-0 z-10 flex items-center px-4 gap-3">
+          <header className="h-14 border-b border-border bg-card/80 backdrop-blur sticky top-0 z-10 flex items-center px-3 sm:px-4 gap-2 sm:gap-3">
             <SidebarTrigger />
-            <div className="flex-1 max-w-md relative">
+            <div className="flex-1 min-w-0 max-w-md relative">
               <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
               <Input
                 value={search}
@@ -119,16 +119,19 @@ const Signals = () => {
                 className="pl-9 h-9 bg-muted/40 border-transparent focus-visible:bg-background"
               />
             </div>
-            <Button variant="ghost" size="icon" className="relative">
+            <Button variant="ghost" size="icon" className="relative shrink-0">
               <Bell className="h-4 w-4" />
             </Button>
+            <div className="h-8 w-8 rounded-full bg-[var(--gradient-primary)] grid place-items-center text-primary-foreground text-xs font-semibold shrink-0">
+              DR
+            </div>
           </header>
 
-          <main className="flex-1 p-6 space-y-6 overflow-x-hidden">
+          <main className="flex-1 p-4 md:p-6 space-y-4 md:space-y-6 overflow-x-hidden">
             <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-3">
-              <div>
+              <div className="min-w-0">
                 <p className="text-xs uppercase tracking-wider text-muted-foreground font-medium">Signal Detection</p>
-                <h1 className="text-2xl font-semibold text-foreground mt-1">Disproportionality Signals</h1>
+                <h1 className="text-xl sm:text-2xl font-semibold text-foreground mt-1">Disproportionality Signals</h1>
                 <p className="text-sm text-muted-foreground mt-1 max-w-2xl">
                   Statistical drug-event signals computed from current case data using PRR, ROR, and Bayesian IC (BCPNN).
                 </p>
@@ -140,7 +143,7 @@ const Signals = () => {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
               <KpiCard label="Total Signals" value={String(counts.total)} delta="all statuses" trend="flat" icon={Activity} />
               <KpiCard label="New" value={String(counts.new)} delta="awaiting review" trend="up" icon={Sparkles} intent="warning" />
               <KpiCard label="Updated" value={String(counts.updated)} delta="case count grew" trend="up" icon={AlertTriangle} intent="warning" />
@@ -148,10 +151,10 @@ const Signals = () => {
               <KpiCard label="Strong (IC₀₂₅>0)" value={String(counts.strong)} delta="Bayesian threshold" trend="up" icon={Brain} intent="success" />
             </div>
 
-            <Card className="p-3 flex flex-wrap items-center gap-3 shadow-[var(--shadow-card)]">
-              <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Filters</span>
+            <Card className="p-3 flex flex-wrap items-center gap-2 sm:gap-3 shadow-[var(--shadow-card)]">
+              <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider w-full sm:w-auto">Filters</span>
               <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as StatusFilter)}>
-                <SelectTrigger className="h-8 w-[140px] text-xs"><SelectValue /></SelectTrigger>
+                <SelectTrigger className="h-8 flex-1 sm:flex-none sm:w-[140px] min-w-[120px] text-xs"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All statuses</SelectItem>
                   <SelectItem value="new">New</SelectItem>
@@ -170,7 +173,7 @@ const Signals = () => {
                   className="h-8 w-20 text-xs"
                 />
               </div>
-              <Badge variant="outline" className="ml-auto font-normal">
+              <Badge variant="outline" className="ml-auto font-normal shrink-0">
                 {filtered.length} of {rows.length}
               </Badge>
             </Card>
@@ -195,17 +198,17 @@ const Signals = () => {
             )}
 
             {selected && (
-              <Card className="p-5 space-y-3 shadow-[var(--shadow-card)]">
+              <Card className="p-4 md:p-5 space-y-3 shadow-[var(--shadow-card)]">
                 <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <h3 className="text-sm font-semibold text-foreground">
+                  <div className="min-w-0">
+                    <h3 className="text-sm font-semibold text-foreground break-words">
                       {selected.drug} → {selected.event}
                     </h3>
                     <p className="text-xs text-muted-foreground mt-0.5">Disproportionality detail</p>
                   </div>
-                  <Badge variant="outline" className="capitalize">{selected.status}</Badge>
+                  <Badge variant="outline" className="capitalize shrink-0">{selected.status}</Badge>
                 </div>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 text-sm">
                   <Metric label="PRR" value={selected.prr?.toFixed(2)} hint="≥ 2 typical threshold" strong={(selected.prr ?? 0) >= 2} />
                   <Metric label="ROR" value={selected.ror?.toFixed(2)} hint="≥ 2 disproportionate" strong={(selected.ror ?? 0) >= 2} />
                   <Metric label="IC" value={selected.ic?.toFixed(2)} hint={`IC₀₂₅ ${selected.ic_lower?.toFixed(2)}`} strong={(selected.ic_lower ?? -1) > 0} />

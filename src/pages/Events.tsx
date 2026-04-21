@@ -56,22 +56,25 @@ const Events = () => {
       <div className="min-h-screen flex w-full bg-[var(--gradient-subtle)]">
         <AppSidebar />
         <div className="flex-1 flex flex-col min-w-0">
-          <header className="h-14 border-b border-border bg-card/80 backdrop-blur sticky top-0 z-10 flex items-center px-4 gap-3">
+          <header className="h-14 border-b border-border bg-card/80 backdrop-blur sticky top-0 z-10 flex items-center px-3 sm:px-4 gap-2 sm:gap-3">
             <SidebarTrigger />
-            <div className="flex-1 max-w-md relative">
+            <div className="flex-1 min-w-0 max-w-md relative">
               <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
               <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search MedDRA term or SOC…" className="pl-9 h-9 bg-muted/40 border-transparent" />
             </div>
+            <div className="h-8 w-8 rounded-full bg-[var(--gradient-primary)] grid place-items-center text-primary-foreground text-xs font-semibold shrink-0">
+              DR
+            </div>
           </header>
-          <main className="flex-1 p-6 space-y-4">
-            <div>
+          <main className="flex-1 p-4 md:p-6 space-y-4 overflow-x-hidden">
+            <div className="min-w-0">
               <p className="text-xs uppercase tracking-wider text-muted-foreground font-medium">Adverse Events</p>
-              <h1 className="text-2xl font-semibold text-foreground mt-1">MedDRA Event Catalog</h1>
+              <h1 className="text-xl sm:text-2xl font-semibold text-foreground mt-1">MedDRA Event Catalog</h1>
               <p className="text-sm text-muted-foreground mt-1">Aggregated events across all ICSR cases.</p>
             </div>
 
             <Card className="overflow-hidden shadow-[var(--shadow-card)]">
-              <div className="px-5 py-3 border-b border-border flex items-center justify-between">
+              <div className="px-4 sm:px-5 py-3 border-b border-border flex items-center justify-between">
                 <h3 className="text-sm font-semibold">Events</h3>
                 <Badge variant="outline" className="font-normal">{filtered.length}</Badge>
               </div>
@@ -80,30 +83,32 @@ const Events = () => {
               ) : filtered.length === 0 ? (
                 <div className="p-10 text-center text-sm text-muted-foreground">No events found.</div>
               ) : (
-                <table className="w-full text-sm">
+                <div className="overflow-x-auto">
+                <table className="w-full text-sm min-w-[640px]">
                   <thead className="bg-muted/40 text-xs uppercase tracking-wider text-muted-foreground">
                     <tr>
-                      <th className="text-left px-5 py-3 font-medium">Preferred Term</th>
-                      <th className="text-left px-5 py-3 font-medium">SOC</th>
-                      <th className="text-right px-5 py-3 font-medium">Reports</th>
-                      <th className="text-right px-5 py-3 font-medium">Suspect Drugs</th>
-                      <th className="text-right px-5 py-3 font-medium">Serious</th>
+                      <th className="text-left px-4 sm:px-5 py-3 font-medium whitespace-nowrap">Preferred Term</th>
+                      <th className="text-left px-4 sm:px-5 py-3 font-medium whitespace-nowrap">SOC</th>
+                      <th className="text-right px-4 sm:px-5 py-3 font-medium whitespace-nowrap">Reports</th>
+                      <th className="text-right px-4 sm:px-5 py-3 font-medium whitespace-nowrap">Drugs</th>
+                      <th className="text-right px-4 sm:px-5 py-3 font-medium whitespace-nowrap">Serious</th>
                     </tr>
                   </thead>
                   <tbody>
                     {filtered.map((e) => (
                       <tr key={e.term} className="border-t border-border hover:bg-muted/30">
-                        <td className="px-5 py-3 font-medium text-foreground">{e.term}</td>
-                        <td className="px-5 py-3 text-muted-foreground">{e.soc ?? "—"}</td>
-                        <td className="px-5 py-3 text-right tabular-nums">{e.count}</td>
-                        <td className="px-5 py-3 text-right tabular-nums">{e.drugs.size}</td>
-                        <td className={cn("px-5 py-3 text-right tabular-nums", e.serious > 0 && "text-destructive font-medium")}>
+                        <td className="px-4 sm:px-5 py-3 font-medium text-foreground">{e.term}</td>
+                        <td className="px-4 sm:px-5 py-3 text-muted-foreground">{e.soc ?? "—"}</td>
+                        <td className="px-4 sm:px-5 py-3 text-right tabular-nums">{e.count}</td>
+                        <td className="px-4 sm:px-5 py-3 text-right tabular-nums">{e.drugs.size}</td>
+                        <td className={cn("px-4 sm:px-5 py-3 text-right tabular-nums", e.serious > 0 && "text-destructive font-medium")}>
                           {e.serious > 0 ? <span className="inline-flex items-center gap-1"><AlertTriangle className="h-3 w-3" />{e.serious}</span> : "0"}
                         </td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
+                </div>
               )}
             </Card>
           </main>
