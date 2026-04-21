@@ -146,10 +146,13 @@ export type Database = {
           drug: string
           event_term: string
           first_detected_at: string
+          ic: number
+          ic_lower: number
           id: string
           last_detected_at: string
           previous_case_count: number
           prr: number
+          ror: number
           soc: string | null
           status: string
           updated_at: string
@@ -162,10 +165,13 @@ export type Database = {
           drug: string
           event_term: string
           first_detected_at?: string
+          ic?: number
+          ic_lower?: number
           id?: string
           last_detected_at?: string
           previous_case_count?: number
           prr?: number
+          ror?: number
           soc?: string | null
           status?: string
           updated_at?: string
@@ -178,10 +184,13 @@ export type Database = {
           drug?: string
           event_term?: string
           first_detected_at?: string
+          ic?: number
+          ic_lower?: number
           id?: string
           last_detected_at?: string
           previous_case_count?: number
           prr?: number
+          ror?: number
           soc?: string | null
           status?: string
           updated_at?: string
