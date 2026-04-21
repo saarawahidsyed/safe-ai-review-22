@@ -49,22 +49,25 @@ const Settings = () => {
       <div className="min-h-screen flex w-full bg-[var(--gradient-subtle)]">
         <AppSidebar />
         <div className="flex-1 flex flex-col min-w-0">
-          <header className="h-14 border-b border-border bg-card/80 backdrop-blur sticky top-0 z-10 flex items-center px-4 gap-3">
+          <header className="h-14 border-b border-border bg-card/80 backdrop-blur sticky top-0 z-10 flex items-center px-3 sm:px-4 gap-2 sm:gap-3">
             <SidebarTrigger />
-            <div className="flex items-center gap-2 text-sm font-medium">
+            <div className="flex items-center gap-2 text-sm font-medium min-w-0 truncate">
               <SettingsIcon className="h-4 w-4 text-primary" /> Settings
             </div>
+            <div className="ml-auto h-8 w-8 rounded-full bg-[var(--gradient-primary)] grid place-items-center text-primary-foreground text-xs font-semibold shrink-0">
+              {(user?.email?.[0] ?? "U").toUpperCase()}
+            </div>
           </header>
-          <main className="flex-1 p-6 space-y-4 max-w-2xl">
-            <div>
+          <main className="flex-1 p-4 md:p-6 space-y-4 max-w-2xl w-full overflow-x-hidden">
+            <div className="min-w-0">
               <p className="text-xs uppercase tracking-wider text-muted-foreground font-medium">Account</p>
-              <h1 className="text-2xl font-semibold text-foreground mt-1">Profile & Preferences</h1>
+              <h1 className="text-xl sm:text-2xl font-semibold text-foreground mt-1">Profile & Preferences</h1>
             </div>
 
-            <Card className="p-5 space-y-4 shadow-[var(--shadow-card)]">
-              <div>
+            <Card className="p-4 md:p-5 space-y-4 shadow-[var(--shadow-card)]">
+              <div className="min-w-0">
                 <Label className="text-xs text-muted-foreground">Email</Label>
-                <p className="text-sm font-medium text-foreground mt-1">{user?.email}</p>
+                <p className="text-sm font-medium text-foreground mt-1 break-all">{user?.email}</p>
               </div>
               <div>
                 <Label className="text-xs text-muted-foreground">Roles</Label>
@@ -88,11 +91,11 @@ const Settings = () => {
                 <Label htmlFor="org" className="text-xs">Organization</Label>
                 <Input id="org" value={organization} onChange={(e) => setOrganization(e.target.value)} disabled={loading} />
               </div>
-              <div className="flex gap-2 pt-2">
-                <Button onClick={save} disabled={saving || loading} size="sm">
+              <div className="flex flex-col sm:flex-row gap-2 pt-2">
+                <Button onClick={save} disabled={saving || loading} size="sm" className="w-full sm:w-auto">
                   {saving ? "Saving…" : "Save changes"}
                 </Button>
-                <Button variant="outline" size="sm" onClick={() => signOut()}>Sign out</Button>
+                <Button variant="outline" size="sm" onClick={() => signOut()} className="w-full sm:w-auto">Sign out</Button>
               </div>
             </Card>
           </main>
