@@ -22,6 +22,7 @@ const Signals = () => {
   const [running, setRunning] = useState(false);
   const [selectedId, setSelectedId] = useState<string>("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
+  const [drugFilter, setDrugFilter] = useState<string>("all");
   const [search, setSearch] = useState("");
   const [minPrr, setMinPrr] = useState<string>("0");
 
