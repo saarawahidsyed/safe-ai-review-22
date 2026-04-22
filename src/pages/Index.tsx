@@ -18,6 +18,20 @@ const aiSignals: Signal[] = [
   { id: "s4", drug: "Metformin", event: "Lactic acidosis", confidence: 71, severity: "Moderate", cases: 28, status: "New" },
   { id: "s5", drug: "Sertraline", event: "QT prolongation", confidence: 64, severity: "Moderate", cases: 19, status: "Validated" },
   { id: "s6", drug: "Ibuprofen", event: "GI bleeding", confidence: 58, severity: "Low", cases: 211, status: "Validated" },
+  { id: "s7", drug: "Warfarin", event: "Gastrointestinal hemorrhage", confidence: 89, severity: "Critical", cases: 73, status: "New" },
+  { id: "s8", drug: "Lisinopril", event: "Angioedema", confidence: 94, severity: "Critical", cases: 41, status: "New" },
+  { id: "s9", drug: "Pembrolizumab", event: "Immune-mediated colitis", confidence: 90, severity: "High", cases: 36, status: "Reviewing" },
+  { id: "s10", drug: "Methotrexate", event: "Hepatotoxicity", confidence: 81, severity: "High", cases: 54, status: "Reviewing" },
+  { id: "s11", drug: "Amoxicillin", event: "Stevens-Johnson syndrome", confidence: 92, severity: "Critical", cases: 22, status: "New" },
+  { id: "s12", drug: "Clopidogrel", event: "Thrombotic thrombocytopenic purpura", confidence: 76, severity: "High", cases: 14, status: "Reviewing" },
+  { id: "s13", drug: "Allopurinol", event: "DRESS syndrome", confidence: 91, severity: "Critical", cases: 19, status: "New" },
+  { id: "s14", drug: "Carbamazepine", event: "Stevens-Johnson syndrome", confidence: 89, severity: "Critical", cases: 26, status: "Reviewing" },
+  { id: "s15", drug: "Rivaroxaban", event: "Intracranial hemorrhage", confidence: 93, severity: "Critical", cases: 39, status: "New" },
+  { id: "s16", drug: "Simvastatin", event: "Rhabdomyolysis", confidence: 84, severity: "High", cases: 47, status: "Validated" },
+  { id: "s17", drug: "Vancomycin", event: "Acute kidney injury", confidence: 82, severity: "High", cases: 58, status: "Reviewing" },
+  { id: "s18", drug: "Ciprofloxacin", event: "Tendon rupture", confidence: 80, severity: "High", cases: 31, status: "Reviewing" },
+  { id: "s19", drug: "Omeprazole", event: "Clostridioides difficile infection", confidence: 68, severity: "Moderate", cases: 92, status: "Validated" },
+  { id: "s20", drug: "Tramadol", event: "Serotonin syndrome", confidence: 85, severity: "High", cases: 24, status: "New" },
 ];
 
 const explanations: Record<string, { features: FeatureContribution[]; rationale: string }> = {
@@ -78,6 +92,123 @@ const explanations: Record<string, { features: FeatureContribution[]; rationale:
       { feature: "H. pylori positive", value: "Yes", shap: 0.16 },
       { feature: "Daily dose", value: "> 1200 mg", shap: 0.14 },
       { feature: "PPI co-prescription", value: "Yes", shap: -0.22 },
+    ],
+  },
+  s7: {
+    rationale: "Bleeding risk amplified by concurrent NSAID use and supratherapeutic INR. Long treatment duration in elderly patients drives signal strength.",
+    features: [
+      { feature: "INR", value: "> 3.5", shap: 0.32 },
+      { feature: "Concurrent NSAID", value: "Yes", shap: 0.27 },
+      { feature: "Patient age", value: "≥ 70 years", shap: 0.21 },
+      { feature: "PPI co-prescription", value: "Yes", shap: -0.15 },
+    ],
+  },
+  s8: {
+    rationale: "ACE-inhibitor angioedema is a class effect with strong association in patients of African or Asian ancestry. Onset is typically within first weeks of therapy.",
+    features: [
+      { feature: "Ancestry", value: "African / Asian", shap: 0.31 },
+      { feature: "Onset window", value: "< 30 days", shap: 0.24 },
+      { feature: "Prior ACE-I exposure", value: "Yes", shap: 0.18 },
+      { feature: "Bradykinin level", value: "Elevated", shap: 0.16 },
+    ],
+  },
+  s9: {
+    rationale: "Checkpoint inhibitor immune-related adverse events cluster between weeks 6–12. GI involvement common with anti-PD-1 therapy.",
+    features: [
+      { feature: "Drug class", value: "Anti-PD-1", shap: 0.29 },
+      { feature: "Onset window", value: "6–12 weeks", shap: 0.24 },
+      { feature: "Prior autoimmune history", value: "Yes", shap: 0.19 },
+      { feature: "Steroid responsiveness", value: "Yes", shap: -0.12 },
+    ],
+  },
+  s10: {
+    rationale: "Cumulative methotrexate dose with elevated transaminases. Risk increases with alcohol use and obesity.",
+    features: [
+      { feature: "Cumulative dose", value: "> 1.5 g", shap: 0.26 },
+      { feature: "ALT", value: "> 3× ULN", shap: 0.23 },
+      { feature: "BMI", value: "> 30", shap: 0.17 },
+      { feature: "Folate supplementation", value: "Yes", shap: -0.18 },
+    ],
+  },
+  s11: {
+    rationale: "Severe cutaneous reaction with mucosal involvement following beta-lactam exposure. HLA association suspected.",
+    features: [
+      { feature: "Onset window", value: "4–14 days", shap: 0.30 },
+      { feature: "Mucosal involvement", value: "Yes", shap: 0.27 },
+      { feature: "Prior beta-lactam reaction", value: "Yes", shap: 0.19 },
+    ],
+  },
+  s12: {
+    rationale: "Rare hematologic signal supported by ADAMTS13 deficiency and microangiopathic features.",
+    features: [
+      { feature: "Schistocytes on smear", value: "Present", shap: 0.28 },
+      { feature: "ADAMTS13 activity", value: "< 10%", shap: 0.25 },
+      { feature: "Onset window", value: "< 4 weeks", shap: 0.18 },
+    ],
+  },
+  s13: {
+    rationale: "DRESS strongly associated with HLA-B*58:01 in Asian populations. Eosinophilia and visceral involvement support causality.",
+    features: [
+      { feature: "HLA-B*58:01", value: "Positive", shap: 0.34 },
+      { feature: "Eosinophilia", value: "> 1500/µL", shap: 0.22 },
+      { feature: "Onset window", value: "2–8 weeks", shap: 0.18 },
+    ],
+  },
+  s14: {
+    rationale: "HLA-B*15:02 confers strong risk for SJS/TEN with carbamazepine, especially in Han Chinese, Thai, and Malay populations.",
+    features: [
+      { feature: "HLA-B*15:02", value: "Positive", shap: 0.36 },
+      { feature: "Onset window", value: "< 8 weeks", shap: 0.23 },
+      { feature: "Mucosal lesions", value: "Yes", shap: 0.20 },
+    ],
+  },
+  s15: {
+    rationale: "DOAC-associated intracranial bleeding correlated with age, falls history, and renal impairment.",
+    features: [
+      { feature: "Patient age", value: "≥ 75", shap: 0.30 },
+      { feature: "Recent fall", value: "Yes", shap: 0.24 },
+      { feature: "CrCl", value: "< 50 mL/min", shap: 0.20 },
+      { feature: "Dose-adjusted for renal", value: "Yes", shap: -0.14 },
+    ],
+  },
+  s16: {
+    rationale: "Simvastatin myopathy risk increased by CYP3A4 inhibitors and high dose. CK elevation diagnostic.",
+    features: [
+      { feature: "Daily dose", value: "≥ 40 mg", shap: 0.28 },
+      { feature: "CYP3A4 inhibitor co-rx", value: "Amiodarone", shap: 0.25 },
+      { feature: "Baseline CK", value: "Elevated", shap: 0.16 },
+    ],
+  },
+  s17: {
+    rationale: "Vancomycin-induced AKI driven by high troughs and combination with piperacillin-tazobactam.",
+    features: [
+      { feature: "Trough level", value: "> 20 mcg/mL", shap: 0.27 },
+      { feature: "Concurrent pip-tazo", value: "Yes", shap: 0.23 },
+      { feature: "Duration", value: "> 7 days", shap: 0.18 },
+    ],
+  },
+  s18: {
+    rationale: "Fluoroquinolone tendinopathy classically affects Achilles tendon; risk amplified by corticosteroid co-use and age.",
+    features: [
+      { feature: "Concurrent corticosteroid", value: "Yes", shap: 0.30 },
+      { feature: "Patient age", value: "≥ 60", shap: 0.22 },
+      { feature: "Achilles involvement", value: "Yes", shap: 0.19 },
+    ],
+  },
+  s19: {
+    rationale: "Long-term PPI use increases C. difficile risk via gastric acid suppression and microbiome disruption.",
+    features: [
+      { feature: "PPI duration", value: "> 1 year", shap: 0.24 },
+      { feature: "Recent antibiotic", value: "Yes", shap: 0.22 },
+      { feature: "Hospitalization", value: "Recent", shap: 0.17 },
+    ],
+  },
+  s20: {
+    rationale: "Tramadol's serotonergic activity precipitates serotonin syndrome when combined with SSRIs/SNRIs.",
+    features: [
+      { feature: "Concurrent SSRI", value: "Yes", shap: 0.32 },
+      { feature: "Onset window", value: "< 14 days", shap: 0.22 },
+      { feature: "Hyperreflexia / clonus", value: "Present", shap: 0.20 },
     ],
   },
 };

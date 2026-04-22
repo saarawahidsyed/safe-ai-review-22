@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Bell, Brain, Search, Activity, AlertTriangle, ShieldAlert, Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
 import { KpiCard } from "@/components/dashboard/KpiCard";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
@@ -22,6 +23,7 @@ const Signals = () => {
   const [running, setRunning] = useState(false);
   const [selectedId, setSelectedId] = useState<string>("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
+  const [drugFilter, setDrugFilter] = useState<string>("all");
   const [search, setSearch] = useState("");
   const [minPrr, setMinPrr] = useState<string>("0");
 
@@ -84,6 +86,7 @@ const Signals = () => {
     const min = parseFloat(minPrr) || 0;
     return rows.filter((r) => {
       if (statusFilter !== "all" && r.status !== statusFilter) return false;
+      if (drugFilter !== "all" && r.drug !== drugFilter) return false;
       if ((r.prr ?? 0) < min) return false;
       if (search) {
         const q = search.toLowerCase();
@@ -91,7 +94,20 @@ const Signals = () => {
       }
       return true;
     });
-  }, [rows, statusFilter, minPrr, search]);
+  }, [rows, statusFilter, drugFilter, minPrr, search]);
+
+  const drugOptions = useMemo(() => {
+    const set = new Set(rows.map((r) => r.drug));
+    return Array.from(set).sort((a, b) => a.localeCompare(b));
+  }, [rows]);
+
+  const topDrugs = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const r of rows) map.set(r.drug, (map.get(r.drug) ?? 0) + (r.cases ?? 0));
+    return Array.from(map.entries())
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5);
+  }, [rows]);
 
   const counts = useMemo(() => ({
     total: rows.length,
@@ -99,7 +115,8 @@ const Signals = () => {
     updated: rows.filter((r) => r.status === "updated").length,
     resolved: rows.filter((r) => r.status === "resolved").length,
     strong: rows.filter((r) => (r.ic_lower ?? -Infinity) > 0).length,
-  }), [rows]);
+    drugs: drugOptions.length,
+  }), [rows, drugOptions]);
 
   const selected = filtered.find((s) => s.id === selectedId) ?? filtered[0];
 
@@ -143,13 +160,45 @@ const Signals = () => {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
               <KpiCard label="Total Signals" value={String(counts.total)} delta="all statuses" trend="flat" icon={Activity} />
               <KpiCard label="New" value={String(counts.new)} delta="awaiting review" trend="up" icon={Sparkles} intent="warning" />
               <KpiCard label="Updated" value={String(counts.updated)} delta="case count grew" trend="up" icon={AlertTriangle} intent="warning" />
               <KpiCard label="Resolved" value={String(counts.resolved)} delta=">30d inactive" trend="flat" icon={ShieldAlert} />
               <KpiCard label="Strong (IC₀₂₅>0)" value={String(counts.strong)} delta="Bayesian threshold" trend="up" icon={Brain} intent="success" />
+              <KpiCard label="Distinct Drugs" value={String(counts.drugs)} delta="under surveillance" trend="flat" icon={Activity} />
             </div>
+
+            {topDrugs.length > 0 && (
+              <Card className="p-4 shadow-[var(--shadow-card)] space-y-2">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-semibold text-foreground">Top Drugs by Case Volume</h3>
+                  <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Top 5</span>
+                </div>
+                <div className="space-y-1.5">
+                  {(() => {
+                    const max = topDrugs[0]?.[1] ?? 1;
+                    return topDrugs.map(([drug, n]) => (
+                      <button
+                        key={drug}
+                        type="button"
+                        onClick={() => setDrugFilter(drug === drugFilter ? "all" : drug)}
+                        className={cn(
+                          "w-full flex items-center gap-3 text-xs hover:bg-muted/40 rounded px-2 py-1 transition-colors",
+                          drugFilter === drug && "bg-primary/10"
+                        )}
+                      >
+                        <span className="w-32 truncate text-left font-medium text-foreground">{drug}</span>
+                        <div className="flex-1 h-1.5 rounded-full bg-muted overflow-hidden">
+                          <div className="h-full bg-primary" style={{ width: `${(n / max) * 100}%` }} />
+                        </div>
+                        <span className="tabular-nums text-muted-foreground w-10 text-right">{n}</span>
+                      </button>
+                    ));
+                  })()}
+                </div>
+              </Card>
+            )}
 
             <Card className="p-3 flex flex-wrap items-center gap-2 sm:gap-3 shadow-[var(--shadow-card)]">
               <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider w-full sm:w-auto">Filters</span>
@@ -160,6 +209,17 @@ const Signals = () => {
                   <SelectItem value="new">New</SelectItem>
                   <SelectItem value="updated">Updated</SelectItem>
                   <SelectItem value="resolved">Resolved</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select value={drugFilter} onValueChange={setDrugFilter}>
+                <SelectTrigger className="h-8 flex-1 sm:flex-none sm:w-[180px] min-w-[140px] text-xs">
+                  <SelectValue placeholder="All drugs" />
+                </SelectTrigger>
+                <SelectContent className="max-h-72">
+                  <SelectItem value="all">All drugs</SelectItem>
+                  {drugOptions.map((d) => (
+                    <SelectItem key={d} value={d}>{d}</SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
               <div className="flex items-center gap-2">
@@ -173,6 +233,16 @@ const Signals = () => {
                   className="h-8 w-20 text-xs"
                 />
               </div>
+              {(statusFilter !== "all" || drugFilter !== "all" || parseFloat(minPrr) > 0) && (
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="h-8 text-xs"
+                  onClick={() => { setStatusFilter("all"); setDrugFilter("all"); setMinPrr("0"); }}
+                >
+                  Clear
+                </Button>
+              )}
               <Badge variant="outline" className="ml-auto font-normal shrink-0">
                 {filtered.length} of {rows.length}
               </Badge>
