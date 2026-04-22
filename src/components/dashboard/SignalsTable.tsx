@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { ArrowUpDown, ArrowUp, ArrowDown, Info } from "lucide-react";
 import { useMemo, useState } from "react";
+import { TruncatedText } from "@/components/ui/truncated-cell";
 
 export type SignalStatus = "New" | "Reviewing" | "Validated" | "new" | "updated" | "resolved";
 
