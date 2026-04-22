@@ -85,6 +85,7 @@ const Signals = () => {
     const min = parseFloat(minPrr) || 0;
     return rows.filter((r) => {
       if (statusFilter !== "all" && r.status !== statusFilter) return false;
+      if (drugFilter !== "all" && r.drug !== drugFilter) return false;
       if ((r.prr ?? 0) < min) return false;
       if (search) {
         const q = search.toLowerCase();
@@ -92,7 +93,20 @@ const Signals = () => {
       }
       return true;
     });
-  }, [rows, statusFilter, minPrr, search]);
+  }, [rows, statusFilter, drugFilter, minPrr, search]);
+
+  const drugOptions = useMemo(() => {
+    const set = new Set(rows.map((r) => r.drug));
+    return Array.from(set).sort((a, b) => a.localeCompare(b));
+  }, [rows]);
+
+  const topDrugs = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const r of rows) map.set(r.drug, (map.get(r.drug) ?? 0) + (r.cases ?? 0));
+    return Array.from(map.entries())
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5);
+  }, [rows]);
 
   const counts = useMemo(() => ({
     total: rows.length,
@@ -100,7 +114,8 @@ const Signals = () => {
     updated: rows.filter((r) => r.status === "updated").length,
     resolved: rows.filter((r) => r.status === "resolved").length,
     strong: rows.filter((r) => (r.ic_lower ?? -Infinity) > 0).length,
-  }), [rows]);
+    drugs: drugOptions.length,
+  }), [rows, drugOptions]);
 
   const selected = filtered.find((s) => s.id === selectedId) ?? filtered[0];
 
