@@ -18,6 +18,20 @@ const aiSignals: Signal[] = [
   { id: "s4", drug: "Metformin", event: "Lactic acidosis", confidence: 71, severity: "Moderate", cases: 28, status: "New" },
   { id: "s5", drug: "Sertraline", event: "QT prolongation", confidence: 64, severity: "Moderate", cases: 19, status: "Validated" },
   { id: "s6", drug: "Ibuprofen", event: "GI bleeding", confidence: 58, severity: "Low", cases: 211, status: "Validated" },
+  { id: "s7", drug: "Warfarin", event: "Gastrointestinal hemorrhage", confidence: 89, severity: "Critical", cases: 73, status: "New" },
+  { id: "s8", drug: "Lisinopril", event: "Angioedema", confidence: 94, severity: "Critical", cases: 41, status: "New" },
+  { id: "s9", drug: "Pembrolizumab", event: "Immune-mediated colitis", confidence: 90, severity: "High", cases: 36, status: "Reviewing" },
+  { id: "s10", drug: "Methotrexate", event: "Hepatotoxicity", confidence: 81, severity: "High", cases: 54, status: "Reviewing" },
+  { id: "s11", drug: "Amoxicillin", event: "Stevens-Johnson syndrome", confidence: 92, severity: "Critical", cases: 22, status: "New" },
+  { id: "s12", drug: "Clopidogrel", event: "Thrombotic thrombocytopenic purpura", confidence: 76, severity: "High", cases: 14, status: "Reviewing" },
+  { id: "s13", drug: "Allopurinol", event: "DRESS syndrome", confidence: 91, severity: "Critical", cases: 19, status: "New" },
+  { id: "s14", drug: "Carbamazepine", event: "Stevens-Johnson syndrome", confidence: 89, severity: "Critical", cases: 26, status: "Reviewing" },
+  { id: "s15", drug: "Rivaroxaban", event: "Intracranial hemorrhage", confidence: 93, severity: "Critical", cases: 39, status: "New" },
+  { id: "s16", drug: "Simvastatin", event: "Rhabdomyolysis", confidence: 84, severity: "High", cases: 47, status: "Validated" },
+  { id: "s17", drug: "Vancomycin", event: "Acute kidney injury", confidence: 82, severity: "High", cases: 58, status: "Reviewing" },
+  { id: "s18", drug: "Ciprofloxacin", event: "Tendon rupture", confidence: 80, severity: "High", cases: 31, status: "Reviewing" },
+  { id: "s19", drug: "Omeprazole", event: "Clostridioides difficile infection", confidence: 68, severity: "Moderate", cases: 92, status: "Validated" },
+  { id: "s20", drug: "Tramadol", event: "Serotonin syndrome", confidence: 85, severity: "High", cases: 24, status: "New" },
 ];
 
 const explanations: Record<string, { features: FeatureContribution[]; rationale: string }> = {
