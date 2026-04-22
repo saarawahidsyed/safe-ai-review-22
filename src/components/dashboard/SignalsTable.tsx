@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { ArrowUpDown, ArrowUp, ArrowDown, Info } from "lucide-react";
 import { useMemo, useState } from "react";
+import { TruncatedText } from "@/components/ui/truncated-cell";
 
 export type SignalStatus = "New" | "Reviewing" | "Validated" | "new" | "updated" | "resolved";
 
@@ -131,8 +132,12 @@ export function SignalsTable({ signals, selectedId, onSelect }: Props) {
                   selectedId === s.id && "bg-primary/5 hover:bg-primary/10"
                 )}
               >
-                <td className="px-5 py-3 font-medium text-foreground">{s.drug}</td>
-                <td className="px-5 py-3 text-muted-foreground">{s.event}</td>
+                <td className="px-5 py-3 font-medium text-foreground max-w-[180px]">
+                  <TruncatedText text={s.drug} tooltipSide="top" />
+                </td>
+                <td className="px-5 py-3 text-muted-foreground max-w-[200px]">
+                  <TruncatedText text={s.event} tooltipSide="top" />
+                </td>
                 <td className="px-5 py-3">
                   <div className="flex items-center gap-2">
                     <div className="w-20 h-1.5 rounded-full bg-muted overflow-hidden">

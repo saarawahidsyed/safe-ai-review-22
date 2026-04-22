@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Search, AlertTriangle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
+import { TruncatedCell } from "@/components/ui/truncated-cell";
 
 interface AggEvent {
   term: string;
@@ -96,9 +97,9 @@ const Events = () => {
                   </thead>
                   <tbody>
                     {filtered.map((e) => (
-                      <tr key={e.term} className="border-t border-border hover:bg-muted/30">
-                        <td className="px-4 sm:px-5 py-3 font-medium text-foreground">{e.term}</td>
-                        <td className="px-4 sm:px-5 py-3 text-muted-foreground">{e.soc ?? "—"}</td>
+                    <tr key={e.term} className="border-t border-border hover:bg-muted/30">
+                        <TruncatedCell className="font-medium text-foreground" tooltip={e.term}>{e.term}</TruncatedCell>
+                        <TruncatedCell className="text-muted-foreground" tooltip={e.soc ?? undefined}>{e.soc ?? "—"}</TruncatedCell>
                         <td className="px-4 sm:px-5 py-3 text-right tabular-nums">{e.count}</td>
                         <td className="px-4 sm:px-5 py-3 text-right tabular-nums">{e.drugs.size}</td>
                         <td className={cn("px-4 sm:px-5 py-3 text-right tabular-nums", e.serious > 0 && "text-destructive font-medium")}>
