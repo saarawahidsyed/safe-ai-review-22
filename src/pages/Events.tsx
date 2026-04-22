@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Search, AlertTriangle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
+import { TruncatedCell } from "@/components/ui/truncated-cell";
 
 interface AggEvent {
   term: string;
