@@ -2,6 +2,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import type { ICSRCase } from "@/data/cases";
+import { TruncatedText } from "@/components/ui/truncated-cell";
 
 interface Props {
   cases: ICSRCase[];
