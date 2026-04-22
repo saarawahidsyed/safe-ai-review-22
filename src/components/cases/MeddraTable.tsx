@@ -40,11 +40,15 @@ export function MeddraTable({ events }: { events: MeddraEvent[] }) {
           <tbody>
             {events.map((e, i) => (
               <tr key={`${e.pt}-${i}`} className="border-t border-border">
-                <td className="px-5 py-3">
-                  <div className="font-medium text-foreground">{e.pt}</div>
-                  {e.llt && <div className="text-xs text-muted-foreground">LLT: {e.llt}</div>}
+                <td className="px-5 py-3 max-w-[280px]">
+                  <div className="font-medium text-foreground">
+                    <TruncatedText text={e.pt} maxWidth="100%" />
+                  </div>
+                  {e.llt && <div className="text-xs text-muted-foreground truncate">LLT: {e.llt}</div>}
                 </td>
-                <td className="px-5 py-3 text-muted-foreground">{e.soc}</td>
+                <td className="px-5 py-3 text-muted-foreground max-w-[280px]">
+                  <TruncatedText text={e.soc} maxWidth="100%" />
+                </td>
                 <td className="px-5 py-3">
                   <span className={cn("inline-flex px-2 py-0.5 rounded-md text-xs font-medium", sevColor[e.severity])}>
                     {e.severity}
