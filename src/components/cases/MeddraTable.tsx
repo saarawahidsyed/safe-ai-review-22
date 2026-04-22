@@ -2,6 +2,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import type { MeddraEvent } from "@/data/cases";
 import { cn } from "@/lib/utils";
+import { TruncatedText } from "@/components/ui/truncated-cell";
 
 const sevColor: Record<MeddraEvent["severity"], string> = {
   Mild: "bg-muted text-muted-foreground",
