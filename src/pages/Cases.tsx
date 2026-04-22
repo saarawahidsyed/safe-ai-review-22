@@ -4,7 +4,7 @@ import { AppSidebar } from "@/components/AppSidebar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Bell, Download, FileText, Search } from "lucide-react";
-import { cases } from "@/data/cases";
+import { cases as seedCases, ICSRCase } from "@/data/cases";
 import { CaseList } from "@/components/cases/CaseList";
 import { CaseHeader } from "@/components/cases/CaseHeader";
 import { PatientPanel } from "@/components/cases/PatientPanel";
@@ -12,10 +12,18 @@ import { NarrativePanel } from "@/components/cases/NarrativePanel";
 import { MeddraTable } from "@/components/cases/MeddraTable";
 import { CaseNotes } from "@/components/cases/CaseNotes";
 import { CaseDecisionBar } from "@/components/cases/CaseDecisionBar";
+import { AddCaseDialog } from "@/components/cases/AddCaseDialog";
+import { AnalyzeFileDialog } from "@/components/cases/AnalyzeFileDialog";
 
 const Cases = () => {
-  const [selectedId, setSelectedId] = useState(cases[0].id);
+  const [cases, setCases] = useState<ICSRCase[]>(seedCases);
+  const [selectedId, setSelectedId] = useState(seedCases[0].id);
   const c = cases.find((x) => x.id === selectedId)!;
+
+  const handleAdd = (nc: ICSRCase) => {
+    setCases((prev) => [nc, ...prev]);
+    setSelectedId(nc.id);
+  };
 
   return (
     <SidebarProvider>
@@ -47,6 +55,8 @@ const Cases = () => {
                 </p>
               </div>
               <div className="flex gap-2">
+                <AnalyzeFileDialog />
+                <AddCaseDialog onAdd={handleAdd} />
                 <Button variant="outline" size="sm" className="gap-1.5"><Download className="h-3.5 w-3.5" /> CIOMS export</Button>
                 <Button size="sm" className="gap-1.5"><FileText className="h-3.5 w-3.5" /> E2B(R3) report</Button>
               </div>
