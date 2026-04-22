@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { ShieldCheck, FileText, Gavel } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { formatDistanceToNow } from "date-fns";
+import { TruncatedText } from "@/components/ui/truncated-cell";
 
 type Entry = {
   id: string;
