@@ -13,6 +13,7 @@ import Signals from "./pages/Signals.tsx";
 import Events from "./pages/Events.tsx";
 import Audit from "./pages/Audit.tsx";
 import Settings from "./pages/Settings.tsx";
+import Prescribe from "./pages/Prescribe.tsx";
 import { AuthProvider } from "./contexts/AuthContext";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 
@@ -32,6 +33,7 @@ const App = () => (
             <Route path="/signals" element={<ProtectedRoute><Signals /></ProtectedRoute>} />
             <Route path="/events" element={<ProtectedRoute><Events /></ProtectedRoute>} />
             <Route path="/xai" element={<ProtectedRoute><Xai /></ProtectedRoute>} />
+            <Route path="/prescribe" element={<ProtectedRoute><Prescribe /></ProtectedRoute>} />
             <Route path="/audit" element={<ProtectedRoute><Audit /></ProtectedRoute>} />
             <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
             <Route path="/admin" element={<ProtectedRoute requireRole="admin"><Admin /></ProtectedRoute>} />
