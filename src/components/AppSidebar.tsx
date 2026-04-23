@@ -1,4 +1,4 @@
-import { Activity, AlertTriangle, FileSearch, LayoutDashboard, LogOut, Microscope, Settings, Shield, ShieldCheck } from "lucide-react";
+import { Activity, AlertTriangle, FileSearch, LayoutDashboard, LogOut, Microscope, Pill, Settings, Shield, ShieldCheck } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import {
   Sidebar,
@@ -19,6 +19,7 @@ const main = [
   { title: "Signal Detection", url: "/signals", icon: Activity },
   { title: "Case Review", url: "/cases", icon: FileSearch },
   { title: "Adverse Events", url: "/events", icon: AlertTriangle },
+  { title: "Treatment Advisor", url: "/prescribe", icon: Pill },
 ];
 const tools = [
   { title: "Model Explainability", url: "/xai", icon: Microscope },
