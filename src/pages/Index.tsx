@@ -10,6 +10,7 @@ import { Activity, AlertTriangle, Bell, Brain, FileText, Search, ShieldAlert } f
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { downloadPdfReport } from "@/lib/pdfExport";
 
 const aiSignals: Signal[] = [
   { id: "s1", drug: "Apixaban", event: "Intracranial hemorrhage", confidence: 92, severity: "Critical", cases: 47, status: "New" },
@@ -217,6 +218,8 @@ const Index = () => {
   const [detected, setDetected] = useState<Signal[]>([]);
   const [running, setRunning] = useState(false);
   const [selectedId, setSelectedId] = useState<string>("s1");
+  const [aiSignalState, setAiSignalState] = useState<Signal[]>(aiSignals);
+  const [statusOverrides, setStatusOverrides] = useState<Record<string, Signal["status"]>>({});
 
   const loadDetected = async () => {
     const { data, error } = await supabase
@@ -266,8 +269,73 @@ const Index = () => {
     }
   };
 
-  const signals: Signal[] = [...detected, ...aiSignals];
+  const applyOverride = (s: Signal): Signal =>
+    statusOverrides[s.id] ? { ...s, status: statusOverrides[s.id] } : s;
+  const signals: Signal[] = [...detected, ...aiSignalState].map(applyOverride);
   const selected = signals.find((s) => s.id === selectedId) ?? signals[0];
+
+  const setSelectedStatus = (status: Signal["status"], label: string) => {
+    if (!selected) return;
+    setStatusOverrides((prev) => ({ ...prev, [selected.id]: status }));
+    toast({ title: label, description: `${selected.drug} → ${selected.event}` });
+  };
+
+  const exportSelectedReport = () => {
+    if (!selected) return;
+    downloadPdfReport({
+      title: "Signal Explanation Report",
+      subtitle: `${selected.drug} → ${selected.event}`,
+      filename: `signal-${selected.drug.toLowerCase().replace(/\s+/g, "-")}-${selected.id}.pdf`,
+      meta: {
+        Generated: new Date().toLocaleString(),
+        Confidence: `${selected.confidence}%`,
+        Severity: selected.severity,
+        Cases: String(selected.cases),
+        Status: String(selected.status),
+        PRR: selected.prr != null ? selected.prr.toFixed(2) : "—",
+        ROR: selected.ror != null ? selected.ror.toFixed(2) : "—",
+        IC: selected.ic != null ? selected.ic.toFixed(2) : "—",
+      },
+      sections: [
+        { title: "Clinical rationale", paragraphs: [exp.rationale] },
+        ...(exp.features.length
+          ? [{
+              title: "Feature contributions (SHAP)",
+              table: {
+                head: ["Feature", "Value", "SHAP"],
+                body: exp.features.map((f) => [f.feature, f.value, f.shap.toFixed(2)]),
+              },
+            }]
+          : []),
+      ],
+      footer: "PV-XAI • Confidential safety report",
+    });
+    toast({ title: "Report exported", description: "Signal explanation downloaded." });
+  };
+
+  const exportDashboard = () => {
+    downloadPdfReport({
+      title: "Pharmacovigilance Dashboard Snapshot",
+      subtitle: "Active safety signals overview",
+      filename: `dashboard-${new Date().toISOString().slice(0, 10)}.pdf`,
+      meta: {
+        Generated: new Date().toLocaleString(),
+        "Total signals": String(signals.length),
+      },
+      sections: [
+        {
+          title: "Signals",
+          table: {
+            head: ["Drug", "Event", "Confidence", "Cases", "Severity", "Status"],
+            body: signals.map((s) => [s.drug, s.event, `${s.confidence}%`, s.cases, s.severity, String(s.status)]),
+          },
+        },
+      ],
+      footer: "PV-XAI Dashboard • Confidential",
+    });
+    toast({ title: "Dashboard exported", description: "PDF downloaded." });
+  };
+  void aiSignalState; void setAiSignalState;
   const exp = explanations[selected?.id] ?? {
     rationale: `Statistical signal: PRR-based detection from ${selected?.cases ?? 0} ICSR reports linking ${selected?.drug} to ${selected?.event}.`,
     features: [],
@@ -305,7 +373,9 @@ const Index = () => {
                 </p>
               </div>
               <div className="flex gap-2">
-                <Button variant="outline" size="sm" className="gap-1.5"><FileText className="h-3.5 w-3.5" /> Export</Button>
+                <Button variant="outline" size="sm" className="gap-1.5" onClick={exportDashboard}>
+                  <FileText className="h-3.5 w-3.5" /> Export
+                </Button>
                 <Button size="sm" className="gap-1.5" onClick={runDetection} disabled={running}>
                   <Brain className="h-3.5 w-3.5" /> {running ? "Detecting…" : "Run Detection"}
                 </Button>
@@ -338,6 +408,11 @@ const Index = () => {
                   confidence={selected.confidence}
                   features={exp.features}
                   rationale={exp.rationale}
+                  status={String(selected.status)}
+                  onValidate={() => setSelectedStatus("Validated", "Signal validated")}
+                  onReject={() => setSelectedStatus("Rejected", "Signal rejected")}
+                  onDismiss={() => setSelectedStatus("Dismissed", "Signal dismissed")}
+                  onExport={exportSelectedReport}
                 />
               </div>
             </div>

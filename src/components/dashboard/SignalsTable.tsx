@@ -6,7 +6,7 @@ import { ArrowUpDown, ArrowUp, ArrowDown, Info } from "lucide-react";
 import { useMemo, useState } from "react";
 import { TruncatedText } from "@/components/ui/truncated-cell";
 
-export type SignalStatus = "New" | "Reviewing" | "Validated" | "new" | "updated" | "resolved";
+export type SignalStatus = "New" | "Reviewing" | "Validated" | "Rejected" | "Dismissed" | "new" | "updated" | "resolved";
 
 export interface Signal {
   id: string;
@@ -27,6 +27,11 @@ const statusStyle: Record<string, string> = {
   new: "bg-primary/15 text-primary border-primary/30",
   updated: "bg-warning/15 text-warning border-warning/30",
   resolved: "bg-muted text-muted-foreground border-border",
+  New: "bg-primary/15 text-primary border-primary/30",
+  Reviewing: "bg-warning/15 text-warning border-warning/30",
+  Validated: "bg-success/15 text-success border-success/30",
+  Rejected: "bg-destructive/15 text-destructive border-destructive/30",
+  Dismissed: "bg-muted text-muted-foreground border-border",
 };
 
 interface Props {
