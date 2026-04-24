@@ -4,10 +4,13 @@ import { AppSidebar } from "@/components/AppSidebar";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Search, AlertTriangle } from "lucide-react";
+import { Search, AlertTriangle, Download } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { TruncatedCell } from "@/components/ui/truncated-cell";
+import { Button } from "@/components/ui/button";
+import { downloadPdfReport } from "@/lib/pdfExport";
+import { toast } from "@/hooks/use-toast";
 
 interface AggEvent {
   term: string;
@@ -70,8 +73,43 @@ const Events = () => {
           <main className="flex-1 p-4 md:p-6 space-y-4 overflow-x-hidden">
             <div className="min-w-0">
               <p className="text-xs uppercase tracking-wider text-muted-foreground font-medium">Adverse Events</p>
-              <h1 className="text-xl sm:text-2xl font-semibold text-foreground mt-1">MedDRA Event Catalog</h1>
-              <p className="text-sm text-muted-foreground mt-1">Aggregated events across all ICSR cases.</p>
+              <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
+                <div>
+                  <h1 className="text-xl sm:text-2xl font-semibold text-foreground mt-1">MedDRA Event Catalog</h1>
+                  <p className="text-sm text-muted-foreground mt-1">Aggregated events across all ICSR cases.</p>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-1.5 w-full sm:w-auto"
+                  disabled={filtered.length === 0}
+                  onClick={() => {
+                    downloadPdfReport({
+                      title: "Adverse Event Catalog",
+                      subtitle: "MedDRA preferred-term aggregation across ICSR cases",
+                      filename: `event-catalog-${new Date().toISOString().slice(0, 10)}.pdf`,
+                      meta: {
+                        Generated: new Date().toLocaleString(),
+                        Events: filtered.length,
+                        "Search filter": q || "—",
+                      },
+                      sections: [
+                        {
+                          title: "Events",
+                          table: {
+                            head: ["Preferred Term", "SOC", "Reports", "Drugs", "Serious"],
+                            body: filtered.map((e) => [e.term, e.soc ?? "—", e.count, e.drugs.size, e.serious]),
+                          },
+                        },
+                      ],
+                      footer: "PV-XAI Adverse Event Catalog • Confidential",
+                    });
+                    toast({ title: "Event catalog exported" });
+                  }}
+                >
+                  <Download className="h-3.5 w-3.5" /> Export PDF
+                </Button>
+              </div>
             </div>
 
             <Card className="overflow-hidden shadow-[var(--shadow-card)]">
