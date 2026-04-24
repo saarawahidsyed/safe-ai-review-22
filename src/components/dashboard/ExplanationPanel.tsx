@@ -1,7 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Brain, Check, X } from "lucide-react";
+import { Brain, Check, X, Ban, Download } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export interface FeatureContribution {
@@ -16,9 +16,14 @@ interface Props {
   confidence: number;
   features: FeatureContribution[];
   rationale: string;
+  status?: string;
+  onValidate?: () => void;
+  onReject?: () => void;
+  onDismiss?: () => void;
+  onExport?: () => void;
 }
 
-export function ExplanationPanel({ drug, event, confidence, features, rationale }: Props) {
+export function ExplanationPanel({ drug, event, confidence, features, rationale, status, onValidate, onReject, onDismiss, onExport }: Props) {
   const max = Math.max(...features.map((f) => Math.abs(f.shap)));
   return (
     <Card className="p-5 shadow-[var(--shadow-card)]">
@@ -77,10 +82,36 @@ export function ExplanationPanel({ drug, event, confidence, features, rationale 
         </div>
       </div>
 
-      <div className="mt-6 flex items-center gap-2 pt-4 border-t border-border">
-        <Button size="sm" className="gap-1.5"><Check className="h-3.5 w-3.5" /> Validate Signal</Button>
-        <Button size="sm" variant="outline" className="gap-1.5"><X className="h-3.5 w-3.5" /> Dismiss</Button>
-        <Button size="sm" variant="ghost" className="ml-auto">Export Report</Button>
+      <div className="mt-6 flex flex-wrap items-center gap-2 pt-4 border-t border-border">
+        <Button
+          size="sm"
+          className="gap-1.5"
+          onClick={onValidate}
+          disabled={!onValidate || status === "Validated"}
+        >
+          <Check className="h-3.5 w-3.5" /> {status === "Validated" ? "Validated" : "Validate Signal"}
+        </Button>
+        <Button
+          size="sm"
+          variant="destructive"
+          className="gap-1.5"
+          onClick={onReject}
+          disabled={!onReject || status === "Rejected"}
+        >
+          <Ban className="h-3.5 w-3.5" /> Reject Signal
+        </Button>
+        <Button
+          size="sm"
+          variant="outline"
+          className="gap-1.5"
+          onClick={onDismiss}
+          disabled={!onDismiss || status === "Dismissed"}
+        >
+          <X className="h-3.5 w-3.5" /> Dismiss
+        </Button>
+        <Button size="sm" variant="ghost" className="ml-auto gap-1.5" onClick={onExport} disabled={!onExport}>
+          <Download className="h-3.5 w-3.5" /> Export Report
+        </Button>
       </div>
     </Card>
   );
