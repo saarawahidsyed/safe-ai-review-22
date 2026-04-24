@@ -373,7 +373,9 @@ const Index = () => {
                 </p>
               </div>
               <div className="flex gap-2">
-                <Button variant="outline" size="sm" className="gap-1.5"><FileText className="h-3.5 w-3.5" /> Export</Button>
+                <Button variant="outline" size="sm" className="gap-1.5" onClick={exportDashboard}>
+                  <FileText className="h-3.5 w-3.5" /> Export
+                </Button>
                 <Button size="sm" className="gap-1.5" onClick={runDetection} disabled={running}>
                   <Brain className="h-3.5 w-3.5" /> {running ? "Detecting…" : "Run Detection"}
                 </Button>
@@ -406,6 +408,11 @@ const Index = () => {
                   confidence={selected.confidence}
                   features={exp.features}
                   rationale={exp.rationale}
+                  status={String(selected.status)}
+                  onValidate={() => setSelectedStatus("Validated", "Signal validated")}
+                  onReject={() => setSelectedStatus("Rejected", "Signal rejected")}
+                  onDismiss={() => setSelectedStatus("Dismissed", "Signal dismissed")}
+                  onExport={exportSelectedReport}
                 />
               </div>
             </div>
