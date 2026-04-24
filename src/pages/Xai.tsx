@@ -99,31 +99,31 @@ const Xai = () => {
       <div className="min-h-screen flex w-full bg-[var(--gradient-subtle)]">
         <AppSidebar />
         <div className="flex-1 flex flex-col min-w-0">
-          <header className="h-14 border-b border-border bg-card/80 backdrop-blur sticky top-0 z-10 flex items-center px-4 gap-3">
+          <header className="h-14 border-b border-border bg-card/80 backdrop-blur sticky top-0 z-10 flex items-center px-3 sm:px-4 gap-2 sm:gap-3">
             <SidebarTrigger />
-            <div className="flex-1 max-w-md relative">
+            <div className="flex-1 min-w-0 max-w-md relative">
               <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-              <Input placeholder="Search features, models, cases…" className="pl-9 h-9 bg-muted/40 border-transparent focus-visible:bg-background" />
+              <Input placeholder="Search features…" className="pl-9 h-9 bg-muted/40 border-transparent focus-visible:bg-background" />
             </div>
-            <Button variant="ghost" size="icon" className="relative">
+            <Button variant="ghost" size="icon" className="relative shrink-0">
               <Bell className="h-4 w-4" />
               <span className="absolute top-2 right-2 h-1.5 w-1.5 rounded-full bg-destructive" />
             </Button>
-            <div className="h-8 w-8 rounded-full bg-[var(--gradient-primary)] grid place-items-center text-primary-foreground text-xs font-semibold">
+            <div className="h-8 w-8 rounded-full bg-[var(--gradient-primary)] grid place-items-center text-primary-foreground text-xs font-semibold shrink-0">
               DR
             </div>
           </header>
 
-          <main className="flex-1 p-6 space-y-6 overflow-x-hidden">
+          <main className="flex-1 p-4 md:p-6 space-y-4 md:space-y-6 overflow-x-hidden">
             <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-3">
-              <div>
+              <div className="min-w-0">
                 <p className="text-xs uppercase tracking-wider text-muted-foreground font-medium">Pharmacovigilance / Model Explainability</p>
-                <h1 className="text-2xl font-semibold text-foreground mt-1">Global &amp; Local XAI Analysis</h1>
+                <h1 className="text-xl sm:text-2xl font-semibold text-foreground mt-1">Global &amp; Local XAI Analysis</h1>
                 <p className="text-sm text-muted-foreground mt-1 max-w-2xl">
                   Understand what drives the safety-signal model across the population, and inspect individual predictions with SHAP force plots.
                 </p>
               </div>
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2">
                 <Button
                   variant="outline"
                   size="sm"
