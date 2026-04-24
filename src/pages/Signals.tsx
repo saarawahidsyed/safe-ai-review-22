@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Bell, Brain, Search, Activity, AlertTriangle, ShieldAlert, Sparkles } from "lucide-react";
+import { Bell, Brain, Search, Activity, AlertTriangle, ShieldAlert, Sparkles, Download } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
@@ -14,6 +14,7 @@ import { KpiCard } from "@/components/dashboard/KpiCard";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
+import { downloadPdfReport } from "@/lib/pdfExport";
 
 type StatusFilter = "all" | "new" | "updated" | "resolved";
 
@@ -154,6 +155,64 @@ const Signals = () => {
                 </p>
               </div>
               <div className="flex gap-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="gap-1.5"
+                  onClick={() => {
+                    if (filtered.length === 0) {
+                      toast({ title: "Nothing to export", description: "Adjust filters to include at least one signal." });
+                      return;
+                    }
+                    downloadPdfReport({
+                      title: "Signal Detection Report",
+                      subtitle: "PRR / ROR / Bayesian IC disproportionality summary",
+                      filename: `signals-report-${new Date().toISOString().slice(0, 10)}.pdf`,
+                      meta: {
+                        Generated: new Date().toLocaleString(),
+                        Signals: filtered.length,
+                        Status: statusFilter,
+                        Drug: drugFilter,
+                        "Min PRR": minPrr,
+                      },
+                      sections: [
+                        {
+                          title: "Summary",
+                          paragraphs: [
+                            `Total signals under surveillance: ${counts.total}. New: ${counts.new}. Updated: ${counts.updated}. Resolved: ${counts.resolved}. Strong (IC₀₂₅ > 0): ${counts.strong}.`,
+                            `Distinct drugs covered: ${counts.drugs}. The current view contains ${filtered.length} signals after filtering.`,
+                          ],
+                        },
+                        {
+                          title: "Top drugs by case volume",
+                          table: {
+                            head: ["Drug", "Cases"],
+                            body: topDrugs.map(([d, n]) => [d, n]),
+                          },
+                        },
+                        {
+                          title: "Signals",
+                          table: {
+                            head: ["Drug", "Event", "Cases", "PRR", "ROR", "IC", "Status"],
+                            body: filtered.map((s) => [
+                              s.drug,
+                              s.event,
+                              s.cases,
+                              (s.prr ?? 0).toFixed(2),
+                              (s.ror ?? 0).toFixed(2),
+                              (s.ic ?? 0).toFixed(2),
+                              s.status,
+                            ]),
+                          },
+                        },
+                      ],
+                      footer: "PV-XAI Signal Detection • Confidential",
+                    });
+                    toast({ title: "PDF exported", description: "Signal report downloaded." });
+                  }}
+                >
+                  <Download className="h-3.5 w-3.5" /> Export PDF
+                </Button>
                 <Button size="sm" className="gap-1.5" onClick={runDetection} disabled={running}>
                   <Brain className="h-3.5 w-3.5" /> {running ? "Detecting…" : "Run Detection"}
                 </Button>

@@ -37,7 +37,7 @@ export function GlobalFeatureImportance({ features }: { features: GlobalFeature[
           const widthPct = (f.importance / max) * 100;
           const positive = f.direction > 0;
           return (
-            <div key={f.feature} className="grid grid-cols-[200px_1fr_auto] items-center gap-3 text-sm">
+            <div key={f.feature} className="grid grid-cols-[120px_1fr_auto] sm:grid-cols-[200px_1fr_auto] items-center gap-2 sm:gap-3 text-sm">
               <div className="min-w-0">
                 <div className="font-medium text-foreground truncate">{f.feature}</div>
                 <span className={cn("inline-flex text-[10px] px-1.5 py-0 rounded uppercase tracking-wider mt-0.5", catColor[f.category])}>

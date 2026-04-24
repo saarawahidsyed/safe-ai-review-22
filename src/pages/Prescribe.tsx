@@ -8,9 +8,10 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
-import { Pill, Sparkles, AlertTriangle, ShieldAlert, Stethoscope, Activity, Loader2, X } from "lucide-react";
+import { Pill, Sparkles, AlertTriangle, ShieldAlert, Stethoscope, Activity, Loader2, X, Download } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { downloadPdfReport } from "@/lib/pdfExport";
 
 interface SideEffect {
   effect: string;
@@ -121,6 +122,58 @@ const Prescribe = () => {
     }
   };
 
+  const exportPdf = () => {
+    if (!result) return;
+    const sections: any[] = [
+      {
+        title: "Patient",
+        paragraphs: [
+          `Primary indication: ${disease}.`,
+          `Age: ${age || "—"} • Sex: ${sex || "—"} • Allergies: ${allergies || "None reported"}.`,
+          `Comorbidities: ${comorbidities.length ? comorbidities.join(", ") : "None recorded"}.`,
+          `Current medications: ${meds.length ? meds.join(", ") : "None recorded"}.`,
+        ],
+      },
+      { title: "Clinical summary", paragraphs: [result.summary] },
+      {
+        title: "Recommended drugs",
+        table: {
+          head: ["Drug", "Line", "Dose", "Rationale"],
+          body: result.recommendations.map((r) => [r.drug, r.line, r.dose, r.rationale]),
+        },
+      },
+      {
+        title: "Predicted side effects",
+        table: {
+          head: ["Drug", "Effect", "Likelihood", "Severity"],
+          body: result.recommendations.flatMap((r) =>
+            r.sideEffects.map((se) => [r.drug, se.effect, se.likelihood, se.severity])
+          ),
+        },
+      },
+    ];
+    if (result.avoid?.length) {
+      sections.push({
+        title: "Drugs to avoid",
+        table: { head: ["Drug", "Reason"], body: result.avoid.map((a) => [a.drug, a.reason]) },
+      });
+    }
+    if (result.interactionAlerts?.length) {
+      sections.push({ title: "Interaction alerts", paragraphs: result.interactionAlerts });
+    }
+    sections.push({ title: "Disclaimer", paragraphs: [result.disclaimer] });
+
+    downloadPdfReport({
+      title: "Treatment Plan",
+      subtitle: `AI decision-support recommendations for ${disease}`,
+      filename: `treatment-plan-${disease.toLowerCase().replace(/\s+/g, "-")}-${new Date().toISOString().slice(0, 10)}.pdf`,
+      meta: { Generated: new Date().toLocaleString(), Comorbidities: comorbidities.length, "Active meds": meds.length },
+      sections,
+      footer: "PV-XAI Treatment Advisor • Not a substitute for clinical judgement",
+    });
+    toast({ title: "Treatment plan exported" });
+  };
+
   return (
     <SidebarProvider>
       <div className="flex min-h-screen w-full bg-background">
@@ -147,7 +200,7 @@ const Prescribe = () => {
                   <Label htmlFor="disease">Primary disease / indication *</Label>
                   <Input id="disease" value={disease} onChange={(e) => setDisease(e.target.value)} placeholder="e.g., Type 2 diabetes mellitus" />
                 </div>
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                   <div className="space-y-2">
                     <Label htmlFor="age">Age</Label>
                     <Input id="age" type="number" value={age} onChange={(e) => setAge(e.target.value)} placeholder="55" />
@@ -156,7 +209,7 @@ const Prescribe = () => {
                     <Label htmlFor="sex">Sex</Label>
                     <Input id="sex" value={sex} onChange={(e) => setSex(e.target.value)} placeholder="M / F" />
                   </div>
-                  <div className="space-y-2 col-span-1">
+                  <div className="space-y-2 col-span-2 sm:col-span-1">
                     <Label htmlFor="allergies">Allergies</Label>
                     <Input id="allergies" value={allergies} onChange={(e) => setAllergies(e.target.value)} placeholder="Penicillin" />
                   </div>
@@ -168,8 +221,13 @@ const Prescribe = () => {
                 <ChipInput label="Current medications" placeholder="e.g., Metformin 1000 mg BID" items={meds} setItems={setMeds} />
               </div>
 
-              <div className="flex items-center justify-end gap-2 pt-2">
-                <Button onClick={submit} disabled={loading} className="gap-2">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-end gap-2 pt-2">
+                {result && (
+                  <Button variant="outline" onClick={exportPdf} className="gap-2 w-full sm:w-auto">
+                    <Download className="h-4 w-4" /> Export PDF
+                  </Button>
+                )}
+                <Button onClick={submit} disabled={loading} className="gap-2 w-full sm:w-auto">
                   {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
                   {loading ? "Analyzing…" : "Get recommendations"}
                 </Button>

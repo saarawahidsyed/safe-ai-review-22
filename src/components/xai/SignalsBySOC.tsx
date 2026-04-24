@@ -1,7 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { Bar, BarChart, CartesianGrid, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 
-const data = [
+const defaultData = [
   { soc: "GI disorders", count: 142 },
   { soc: "Nervous system", count: 118 },
   { soc: "Cardiac", count: 96 },
@@ -10,16 +10,20 @@ const data = [
   { soc: "Skin", count: 58 },
   { soc: "Musculoskeletal", count: 47 },
   { soc: "Psychiatric", count: 32 },
+  { soc: "Endocrine", count: 28 },
+  { soc: "Vascular", count: 24 },
+  { soc: "Infections", count: 21 },
+  { soc: "Investigations", count: 17 },
 ];
 
-export function SignalsBySOC() {
+export function SignalsBySOC({ data = defaultData }: { data?: { soc: string; count: number }[] }) {
   return (
     <Card className="p-5 shadow-[var(--shadow-card)]">
       <div className="mb-3">
         <h3 className="text-sm font-semibold text-foreground">Signals by System Organ Class</h3>
         <p className="text-xs text-muted-foreground">Distribution of AI-detected signals · last 90 days</p>
       </div>
-      <div className="h-56">
+      <div className="h-72">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={data} layout="vertical" margin={{ top: 5, right: 16, left: 8, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" horizontal={false} />
