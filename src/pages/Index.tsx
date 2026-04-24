@@ -10,6 +10,7 @@ import { Activity, AlertTriangle, Bell, Brain, FileText, Search, ShieldAlert } f
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { downloadPdfReport } from "@/lib/pdfExport";
 
 const aiSignals: Signal[] = [
   { id: "s1", drug: "Apixaban", event: "Intracranial hemorrhage", confidence: 92, severity: "Critical", cases: 47, status: "New" },
@@ -217,6 +218,8 @@ const Index = () => {
   const [detected, setDetected] = useState<Signal[]>([]);
   const [running, setRunning] = useState(false);
   const [selectedId, setSelectedId] = useState<string>("s1");
+  const [aiSignalState, setAiSignalState] = useState<Signal[]>(aiSignals);
+  const [statusOverrides, setStatusOverrides] = useState<Record<string, Signal["status"]>>({});
 
   const loadDetected = async () => {
     const { data, error } = await supabase
