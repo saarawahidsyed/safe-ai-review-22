@@ -361,16 +361,57 @@ const Index = () => {
             </div>
           </header>
 
-          <main className="flex-1 p-6 space-y-6 overflow-x-hidden">
+          <main className="flex-1 p-4 sm:p-6 space-y-6 overflow-x-hidden">
+            <section
+              aria-labelledby="mission-heading"
+              className="rounded-xl border border-primary/20 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent p-5 sm:p-6 shadow-[var(--shadow-card)]"
+            >
+              <div className="flex items-start gap-3">
+                <div className="hidden sm:flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/15 text-primary">
+                  <Brain className="h-5 w-5" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-[11px] uppercase tracking-[0.18em] text-primary font-semibold">
+                    PV-XAI Platform
+                  </p>
+                  <h1
+                    id="mission-heading"
+                    className="mt-1 text-xl sm:text-2xl font-semibold text-foreground leading-tight"
+                  >
+                    Explainable Artificial Intelligence for Patient Safety Review in Pharmacovigilance
+                  </h1>
+                  <p className="mt-2 text-sm text-muted-foreground max-w-3xl leading-relaxed">
+                    A transparent, auditable AI system that detects adverse drug reaction signals from
+                    ICSR reports, explains every prediction with SHAP-based feature attributions, and
+                    supports clinicians and safety reviewers with evidence-grounded recommendations —
+                    advancing patient safety across the drug lifecycle.
+                  </p>
+                  <div className="mt-3 flex flex-wrap gap-1.5">
+                    {[
+                      "Signal Detection",
+                      "Model Explainability (SHAP)",
+                      "Adverse Event Analysis",
+                      "Patient Safety Review",
+                      "Regulatory-Ready Audit Trail",
+                    ].map((tag) => (
+                      <span
+                        key={tag}
+                        className="inline-flex items-center rounded-full bg-background/70 border border-border px-2.5 py-0.5 text-[11px] font-medium text-foreground"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </section>
+
             <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-3">
               <div>
-                <p className="text-xs uppercase tracking-wider text-muted-foreground font-medium">Pharmacovigilance / Safety Review</p>
-                <h1 className="text-2xl font-semibold text-foreground mt-1">
-                  Explainable AI for Drug Safety Surveillance
-                </h1>
-                <p className="text-sm text-muted-foreground mt-1 max-w-2xl">
-                  Transparent, auditable signal detection across global adverse event reports. Every prediction is traceable to its clinical evidence.
-                </p>
+                <p className="text-xs uppercase tracking-wider text-muted-foreground font-medium">Safety Signals Overview</p>
+                <h2 className="text-lg sm:text-xl font-semibold text-foreground mt-1">
+                  Active AI-detected signals & explanations
+                </h2>
               </div>
               <div className="flex gap-2">
                 <Button variant="outline" size="sm" className="gap-1.5" onClick={exportDashboard}>
