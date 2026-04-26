@@ -10,6 +10,9 @@ export function CaseHeader({ c }: { c: ICSRCase }) {
         <div className="space-y-1">
           <div className="flex items-center gap-2">
             <span className="text-xs font-mono text-muted-foreground">{c.id}</span>
+            <Badge variant="outline" className="font-mono text-[10px] py-0 h-4 text-primary border-primary/40">
+              {c.patient.patientId}
+            </Badge>
             {c.seriousness.map((s) => (
               <Badge key={s} className="bg-destructive/10 text-destructive border-0 hover:bg-destructive/15 font-normal">
                 {s}
