@@ -402,6 +402,60 @@ const Prescribe = () => {
                   </Card>
                 )}
 
+                {result.dietPlan && (
+                  <Card className="p-5 shadow-[var(--shadow-card)] space-y-4 border-primary/20">
+                    <div className="flex items-center gap-2">
+                      <Apple className="h-4 w-4 text-primary" />
+                      <h3 className="text-sm font-semibold">Dietary plan</h3>
+                      <Badge variant="outline" className="text-[10px] uppercase tracking-wider">Disease + drug-aware</Badge>
+                    </div>
+                    <div className="grid sm:grid-cols-2 gap-3">
+                      <div className="rounded-md border border-primary/20 bg-primary/5 p-3 space-y-1.5">
+                        <div className="text-xs uppercase tracking-wider text-primary font-semibold">Foods to favor</div>
+                        <ul className="text-sm space-y-1">
+                          {result.dietPlan.foodsToFavor.map((f, i) => (
+                            <li key={i} className="flex gap-2"><span className="mt-1.5 h-1 w-1 rounded-full bg-primary shrink-0" />{f}</li>
+                          ))}
+                        </ul>
+                      </div>
+                      <div className="rounded-md border border-destructive/20 bg-destructive/5 p-3 space-y-1.5">
+                        <div className="text-xs uppercase tracking-wider text-destructive font-semibold">Foods to avoid</div>
+                        <ul className="text-sm space-y-1">
+                          {result.dietPlan.foodsToAvoid.map((f, i) => (
+                            <li key={i} className="flex gap-2"><span className="mt-1.5 h-1 w-1 rounded-full bg-destructive shrink-0" />{f}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+                    {(result.dietPlan.hydration || result.dietPlan.mealTiming) && (
+                      <div className="grid sm:grid-cols-2 gap-3 text-sm">
+                        {result.dietPlan.hydration && (
+                          <div className="rounded-md border border-border p-3">
+                            <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium mb-1">Hydration</div>
+                            <div className="text-foreground/90">{result.dietPlan.hydration}</div>
+                          </div>
+                        )}
+                        {result.dietPlan.mealTiming && (
+                          <div className="rounded-md border border-border p-3">
+                            <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium mb-1">Meal timing vs. drug intake</div>
+                            <div className="text-foreground/90">{result.dietPlan.mealTiming}</div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                    {result.dietPlan.lifestyleNotes && result.dietPlan.lifestyleNotes.length > 0 && (
+                      <div>
+                        <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium mb-1.5">Lifestyle notes</div>
+                        <ul className="text-sm space-y-1">
+                          {result.dietPlan.lifestyleNotes.map((n, i) => (
+                            <li key={i} className="flex gap-2"><span className="mt-1.5 h-1 w-1 rounded-full bg-muted-foreground shrink-0" />{n}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </Card>
+                )}
+
                 <p className="text-[11px] text-muted-foreground italic px-1">{result.disclaimer}</p>
               </div>
             )}
