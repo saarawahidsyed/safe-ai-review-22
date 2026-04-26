@@ -28,6 +28,11 @@ Given a primary disease, comorbidities, current medications, and patient profile
 3) Predicted side effects per recommended drug with likelihood (Common / Uncommon / Rare) and severity.
 4) Comorbidity-specific adjustments (e.g., renal/hepatic dose modification).
 5) Monitoring parameters.
+6) A dietary plan tailored to the disease AND the recommended drugs, including:
+   - foodsToFavor: nutrient-rich foods that support treatment / disease management
+   - foodsToAvoid: foods/drinks that worsen the disease or interact with the recommended drugs (e.g., grapefruit with statins, vitamin K with warfarin, tyramine with MAOIs)
+   - hydration & meal-timing guidance relative to drug intake
+   - lifestyle notes (alcohol, caffeine, salt, sugar) when clinically relevant.
 Output STRICT JSON matching the provided tool schema. Be concise but clinically precise. Always include a disclaimer that this is decision support, not a prescription.`;
 
     const userPrompt = `Primary disease: ${disease}
@@ -86,9 +91,21 @@ Patient: ${JSON.stringify(patient)}`;
             },
             interactionAlerts: { type: "array", items: { type: "string" } },
             summary: { type: "string" },
+            dietPlan: {
+              type: "object",
+              properties: {
+                foodsToFavor: { type: "array", items: { type: "string" } },
+                foodsToAvoid: { type: "array", items: { type: "string" } },
+                hydration: { type: "string" },
+                mealTiming: { type: "string" },
+                lifestyleNotes: { type: "array", items: { type: "string" } },
+              },
+              required: ["foodsToFavor", "foodsToAvoid"],
+              additionalProperties: false,
+            },
             disclaimer: { type: "string" },
           },
-          required: ["recommendations", "avoid", "summary", "disclaimer"],
+          required: ["recommendations", "avoid", "summary", "dietPlan", "disclaimer"],
           additionalProperties: false,
         },
       },

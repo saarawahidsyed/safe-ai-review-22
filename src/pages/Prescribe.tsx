@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { Card } from "@/components/ui/card";
@@ -8,10 +8,12 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
-import { Pill, Sparkles, AlertTriangle, ShieldAlert, Stethoscope, Activity, Loader2, X, Download } from "lucide-react";
+import { Pill, Sparkles, AlertTriangle, ShieldAlert, Stethoscope, Activity, Loader2, X, Download, Apple, UserSearch } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { downloadPdfReport } from "@/lib/pdfExport";
+import { useCasesStore, listPatients, getPatientProfile } from "@/lib/casesStore";
 
 interface SideEffect {
   effect: string;
@@ -28,11 +30,19 @@ interface Recommendation {
   monitoring?: string[];
 }
 interface AvoidItem { drug: string; reason: string }
+interface DietPlan {
+  foodsToFavor: string[];
+  foodsToAvoid: string[];
+  hydration?: string;
+  mealTiming?: string;
+  lifestyleNotes?: string[];
+}
 interface Result {
   recommendations: Recommendation[];
   avoid: AvoidItem[];
   interactionAlerts?: string[];
   summary: string;
+  dietPlan?: DietPlan;
   disclaimer: string;
 }
 
@@ -83,6 +93,9 @@ const lineColor = (l: string) =>
   : "bg-muted text-muted-foreground border-border";
 
 const Prescribe = () => {
+  const { cases } = useCasesStore();
+  const patients = useMemo(() => listPatients(cases), [cases]);
+  const [patientId, setPatientId] = useState<string>("");
   const [disease, setDisease] = useState("");
   const [comorbidities, setComorbidities] = useState<string[]>([]);
   const [meds, setMeds] = useState<string[]>([]);
@@ -91,6 +104,27 @@ const Prescribe = () => {
   const [allergies, setAllergies] = useState("");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<Result | null>(null);
+
+  const applyPatient = (pid: string) => {
+    setPatientId(pid);
+    if (pid === "__none__") {
+      setPatientId("");
+      return;
+    }
+    const profile = getPatientProfile(cases, pid);
+    if (!profile) return;
+    setAge(String(profile.age));
+    setSex(profile.sex);
+    setComorbidities(profile.conditions);
+    setMeds(profile.medications);
+    if (!disease && profile.cases[0]?.suspectDrug?.indication) {
+      setDisease(profile.cases[0].suspectDrug.indication);
+    }
+    toast({
+      title: `Patient ${pid} loaded`,
+      description: `${profile.medications.length} med(s) • ${profile.conditions.length} condition(s)`,
+    });
+  };
 
   const submit = async () => {
     if (!disease.trim()) {
@@ -161,6 +195,16 @@ const Prescribe = () => {
     if (result.interactionAlerts?.length) {
       sections.push({ title: "Interaction alerts", paragraphs: result.interactionAlerts });
     }
+    if (result.dietPlan) {
+      const d = result.dietPlan;
+      const para: string[] = [];
+      if (d.foodsToFavor?.length) para.push(`Foods to favor: ${d.foodsToFavor.join(", ")}.`);
+      if (d.foodsToAvoid?.length) para.push(`Foods to avoid: ${d.foodsToAvoid.join(", ")}.`);
+      if (d.hydration) para.push(`Hydration: ${d.hydration}`);
+      if (d.mealTiming) para.push(`Meal timing: ${d.mealTiming}`);
+      if (d.lifestyleNotes?.length) para.push(`Lifestyle: ${d.lifestyleNotes.join(" • ")}`);
+      sections.push({ title: "Dietary plan", paragraphs: para });
+    }
     sections.push({ title: "Disclaimer", paragraphs: [result.disclaimer] });
 
     downloadPdfReport({
@@ -193,6 +237,36 @@ const Prescribe = () => {
               <div>
                 <h2 className="text-base font-semibold flex items-center gap-2"><Stethoscope className="h-4 w-4 text-primary" />Patient & Condition</h2>
                 <p className="text-xs text-muted-foreground mt-1">Enter the primary disease and any comorbidities. The AI returns drug suggestions, contraindications, and predicted side effects.</p>
+              </div>
+
+              <div className="rounded-md border border-border bg-muted/30 p-3 space-y-2">
+                <div className="flex items-center gap-2">
+                  <UserSearch className="h-3.5 w-3.5 text-primary" />
+                  <Label className="text-xs uppercase tracking-wider text-muted-foreground">Load from existing patient</Label>
+                </div>
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <Select value={patientId || "__none__"} onValueChange={applyPatient}>
+                    <SelectTrigger className="h-9 text-sm">
+                      <SelectValue placeholder="Select Patient ID…" />
+                    </SelectTrigger>
+                    <SelectContent className="max-h-72">
+                      <SelectItem value="__none__">— No patient (manual entry) —</SelectItem>
+                      {patients.map((p) => (
+                        <SelectItem key={p.patient.patientId} value={p.patient.patientId}>
+                          {p.patient.patientId} · {p.patient.sex}, {p.patient.age}y · {p.suspectDrug.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {patientId && (
+                    <Button variant="ghost" size="sm" onClick={() => { setPatientId(""); }} className="text-xs">
+                      Clear patient
+                    </Button>
+                  )}
+                </div>
+                <p className="text-[11px] text-muted-foreground">
+                  Auto-fills age, sex, comorbidities and current medications from the linked ICSR case(s).
+                </p>
               </div>
 
               <div className="grid md:grid-cols-2 gap-4">
@@ -325,6 +399,60 @@ const Prescribe = () => {
                         <li key={i} className="flex gap-2"><span className="mt-1.5 h-1 w-1 rounded-full bg-amber-500 shrink-0" />{a}</li>
                       ))}
                     </ul>
+                  </Card>
+                )}
+
+                {result.dietPlan && (
+                  <Card className="p-5 shadow-[var(--shadow-card)] space-y-4 border-primary/20">
+                    <div className="flex items-center gap-2">
+                      <Apple className="h-4 w-4 text-primary" />
+                      <h3 className="text-sm font-semibold">Dietary plan</h3>
+                      <Badge variant="outline" className="text-[10px] uppercase tracking-wider">Disease + drug-aware</Badge>
+                    </div>
+                    <div className="grid sm:grid-cols-2 gap-3">
+                      <div className="rounded-md border border-primary/20 bg-primary/5 p-3 space-y-1.5">
+                        <div className="text-xs uppercase tracking-wider text-primary font-semibold">Foods to favor</div>
+                        <ul className="text-sm space-y-1">
+                          {result.dietPlan.foodsToFavor.map((f, i) => (
+                            <li key={i} className="flex gap-2"><span className="mt-1.5 h-1 w-1 rounded-full bg-primary shrink-0" />{f}</li>
+                          ))}
+                        </ul>
+                      </div>
+                      <div className="rounded-md border border-destructive/20 bg-destructive/5 p-3 space-y-1.5">
+                        <div className="text-xs uppercase tracking-wider text-destructive font-semibold">Foods to avoid</div>
+                        <ul className="text-sm space-y-1">
+                          {result.dietPlan.foodsToAvoid.map((f, i) => (
+                            <li key={i} className="flex gap-2"><span className="mt-1.5 h-1 w-1 rounded-full bg-destructive shrink-0" />{f}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+                    {(result.dietPlan.hydration || result.dietPlan.mealTiming) && (
+                      <div className="grid sm:grid-cols-2 gap-3 text-sm">
+                        {result.dietPlan.hydration && (
+                          <div className="rounded-md border border-border p-3">
+                            <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium mb-1">Hydration</div>
+                            <div className="text-foreground/90">{result.dietPlan.hydration}</div>
+                          </div>
+                        )}
+                        {result.dietPlan.mealTiming && (
+                          <div className="rounded-md border border-border p-3">
+                            <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium mb-1">Meal timing vs. drug intake</div>
+                            <div className="text-foreground/90">{result.dietPlan.mealTiming}</div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                    {result.dietPlan.lifestyleNotes && result.dietPlan.lifestyleNotes.length > 0 && (
+                      <div>
+                        <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium mb-1.5">Lifestyle notes</div>
+                        <ul className="text-sm space-y-1">
+                          {result.dietPlan.lifestyleNotes.map((n, i) => (
+                            <li key={i} className="flex gap-2"><span className="mt-1.5 h-1 w-1 rounded-full bg-muted-foreground shrink-0" />{n}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
                   </Card>
                 )}
 

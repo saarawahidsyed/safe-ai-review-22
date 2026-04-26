@@ -35,6 +35,9 @@ export function CaseList({ cases, selectedId, onSelect }: Props) {
                   {c.aiPrediction.confidence}%
                 </Badge>
               </div>
+              <div className="text-[10px] font-mono text-primary mt-0.5 truncate">
+                {c.patient.patientId}
+              </div>
               <div className="mt-1 text-sm font-medium text-foreground">
                 <TruncatedText text={c.suspectDrug.name} maxWidth="100%" />
               </div>

@@ -15,10 +15,18 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { downloadPdfReport } from "@/lib/pdfExport";
+import { useCasesStore, listPatients, getPatientProfile } from "@/lib/casesStore";
 
 type StatusFilter = "all" | "new" | "updated" | "resolved";
 
 const Signals = () => {
+  const { cases: storeCases } = useCasesStore();
+  const patients = useMemo(() => listPatients(storeCases), [storeCases]);
+  const [patientFilter, setPatientFilter] = useState<string>("all");
+  const patientProfile = useMemo(
+    () => (patientFilter !== "all" ? getPatientProfile(storeCases, patientFilter) : null),
+    [storeCases, patientFilter],
+  );
   const [rows, setRows] = useState<Signal[]>([]);
   const [loading, setLoading] = useState(true);
   const [running, setRunning] = useState(false);
@@ -85,17 +93,28 @@ const Signals = () => {
 
   const filtered = useMemo(() => {
     const min = parseFloat(minPrr) || 0;
+    const patientDrugs = patientProfile
+      ? new Set(patientProfile.medications.map((d) => d.split(/\s|,/)[0].toLowerCase()))
+      : null;
     return rows.filter((r) => {
       if (statusFilter !== "all" && r.status !== statusFilter) return false;
       if (drugFilter !== "all" && r.drug !== drugFilter) return false;
       if ((r.prr ?? 0) < min) return false;
+      if (patientDrugs) {
+        const drugKey = r.drug.toLowerCase();
+        let match = false;
+        for (const d of patientDrugs) {
+          if (drugKey.includes(d) || d.includes(drugKey)) { match = true; break; }
+        }
+        if (!match) return false;
+      }
       if (search) {
         const q = search.toLowerCase();
         if (!r.drug.toLowerCase().includes(q) && !r.event.toLowerCase().includes(q)) return false;
       }
       return true;
     });
-  }, [rows, statusFilter, drugFilter, minPrr, search]);
+  }, [rows, statusFilter, drugFilter, minPrr, search, patientProfile]);
 
   const drugOptions = useMemo(() => {
     const set = new Set(rows.map((r) => r.drug));
@@ -261,6 +280,19 @@ const Signals = () => {
 
             <Card className="p-3 flex flex-wrap items-center gap-2 sm:gap-3 shadow-[var(--shadow-card)]">
               <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider w-full sm:w-auto">Filters</span>
+              <Select value={patientFilter} onValueChange={setPatientFilter}>
+                <SelectTrigger className="h-8 flex-1 sm:flex-none sm:w-[200px] min-w-[160px] text-xs">
+                  <SelectValue placeholder="All patients" />
+                </SelectTrigger>
+                <SelectContent className="max-h-72">
+                  <SelectItem value="all">All patients</SelectItem>
+                  {patients.map((p) => (
+                    <SelectItem key={p.patient.patientId} value={p.patient.patientId}>
+                      {p.patient.patientId} · {p.suspectDrug.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as StatusFilter)}>
                 <SelectTrigger className="h-8 flex-1 sm:flex-none sm:w-[140px] min-w-[120px] text-xs"><SelectValue /></SelectTrigger>
                 <SelectContent>
@@ -292,12 +324,12 @@ const Signals = () => {
                   className="h-8 w-20 text-xs"
                 />
               </div>
-              {(statusFilter !== "all" || drugFilter !== "all" || parseFloat(minPrr) > 0) && (
+              {(statusFilter !== "all" || drugFilter !== "all" || parseFloat(minPrr) > 0 || patientFilter !== "all") && (
                 <Button
                   size="sm"
                   variant="ghost"
                   className="h-8 text-xs"
-                  onClick={() => { setStatusFilter("all"); setDrugFilter("all"); setMinPrr("0"); }}
+                  onClick={() => { setStatusFilter("all"); setDrugFilter("all"); setMinPrr("0"); setPatientFilter("all"); }}
                 >
                   Clear
                 </Button>
@@ -306,6 +338,18 @@ const Signals = () => {
                 {filtered.length} of {rows.length}
               </Badge>
             </Card>
+
+            {patientProfile && (
+              <Card className="p-3 shadow-[var(--shadow-card)] border-primary/30 bg-primary/5">
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs">
+                  <span className="font-mono font-semibold text-primary">{patientProfile.patientId}</span>
+                  <span className="text-muted-foreground">{patientProfile.sex}, {patientProfile.age}y · {patientProfile.weightKg} kg</span>
+                  <span className="text-muted-foreground">Conditions: <span className="text-foreground">{patientProfile.conditions.slice(0, 3).join(", ") || "—"}</span></span>
+                  <span className="text-muted-foreground">Meds: <span className="text-foreground">{patientProfile.medications.slice(0, 3).join(", ") || "—"}</span></span>
+                  <span className="ml-auto text-muted-foreground">Showing signals matching this patient's drugs</span>
+                </div>
+              </Card>
+            )}
 
             {loading ? (
               <Card className="p-10 text-center text-sm text-muted-foreground">Loading signals…</Card>

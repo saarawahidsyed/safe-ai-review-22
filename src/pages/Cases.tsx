@@ -4,7 +4,8 @@ import { AppSidebar } from "@/components/AppSidebar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Bell, Download, FileText, Search } from "lucide-react";
-import { cases as seedCases, ICSRCase } from "@/data/cases";
+import { ICSRCase } from "@/data/cases";
+import { useCasesStore } from "@/lib/casesStore";
 import { CaseList } from "@/components/cases/CaseList";
 import { CaseHeader } from "@/components/cases/CaseHeader";
 import { PatientPanel } from "@/components/cases/PatientPanel";
@@ -16,14 +17,16 @@ import { AddCaseDialog } from "@/components/cases/AddCaseDialog";
 import { AnalyzeFileDialog } from "@/components/cases/AnalyzeFileDialog";
 
 const Cases = () => {
-  const [cases, setCases] = useState<ICSRCase[]>(seedCases);
-  const [selectedId, setSelectedId] = useState(seedCases[0].id);
-  const c = cases.find((x) => x.id === selectedId)!;
+  const { cases, addCase } = useCasesStore();
+  const [selectedId, setSelectedId] = useState(cases[0]?.id ?? "");
+  const c = cases.find((x) => x.id === selectedId) ?? cases[0];
 
   const handleAdd = (nc: ICSRCase) => {
-    setCases((prev) => [nc, ...prev]);
+    addCase(nc);
     setSelectedId(nc.id);
   };
+
+  if (!c) return null;
 
   return (
     <SidebarProvider>
