@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,11 +13,27 @@ interface Props {
   onAdd: (c: ICSRCase) => void;
 }
 
+function generateIds() {
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = String(now.getMonth() + 1).padStart(2, "0");
+  const d = String(now.getDate()).padStart(2, "0");
+  const hh = String(now.getHours()).padStart(2, "0");
+  const mm = String(now.getMinutes()).padStart(2, "0");
+  const ss = String(now.getSeconds()).padStart(2, "0");
+  const rand = Math.floor(Math.random() * 900 + 100);
+  return {
+    caseId: `ICSR-${y}-${m}${d}${hh}${mm}${ss}`,
+    patientId: `PT-${y}${m}${d}-${hh}${mm}${ss}-${rand}`,
+  };
+}
+
 export function AddCaseDialog({ onAdd }: Props) {
   const [open, setOpen] = useState(false);
+  const initial = generateIds();
   const [form, setForm] = useState({
-    caseId: "",
-    patientId: "",
+    caseId: initial.caseId,
+    patientId: initial.patientId,
     age: "",
     sex: "F" as "F" | "M",
     weightKg: "",
@@ -31,11 +47,19 @@ export function AddCaseDialog({ onAdd }: Props) {
     country: "",
   });
 
+  // Refresh auto-generated IDs each time the dialog opens.
+  useEffect(() => {
+    if (open) {
+      const ids = generateIds();
+      setForm((f) => ({ ...f, caseId: ids.caseId, patientId: ids.patientId }));
+    }
+  }, [open]);
+
   const set = (k: keyof typeof form, v: string) => setForm((f) => ({ ...f, [k]: v }));
 
   const handleSubmit = () => {
-    if (!form.caseId || !form.patientId || !form.drug || !form.eventPt) {
-      toast({ title: "Missing fields", description: "Case ID, Patient ID, drug, and event are required.", variant: "destructive" });
+    if (!form.drug || !form.eventPt) {
+      toast({ title: "Missing fields", description: "Suspect drug and adverse event are required.", variant: "destructive" });
       return;
     }
     const newCase: ICSRCase = {
@@ -65,7 +89,8 @@ export function AddCaseDialog({ onAdd }: Props) {
     onAdd(newCase);
     toast({ title: "Case added", description: `${form.caseId} created locally.` });
     setOpen(false);
-    setForm({ caseId: "", patientId: "", age: "", sex: "F", weightKg: "", drug: "", dose: "", indication: "", eventPt: "", soc: "", severity: "Moderate", narrative: "", country: "" });
+    const next = generateIds();
+    setForm({ caseId: next.caseId, patientId: next.patientId, age: "", sex: "F", weightKg: "", drug: "", dose: "", indication: "", eventPt: "", soc: "", severity: "Moderate", narrative: "", country: "" });
   };
 
   return (
@@ -83,12 +108,12 @@ export function AddCaseDialog({ onAdd }: Props) {
 
         <div className="grid grid-cols-2 gap-4 py-2">
           <div>
-            <Label>Case ID *</Label>
-            <Input value={form.caseId} onChange={(e) => set("caseId", e.target.value)} placeholder="ICSR-2024-XXXXX" />
+            <Label>Case ID (auto)</Label>
+            <Input value={form.caseId} readOnly className="bg-muted/40 font-mono text-xs" />
           </div>
           <div>
-            <Label>Patient ID *</Label>
-            <Input value={form.patientId} onChange={(e) => set("patientId", e.target.value)} placeholder="PT-100123" />
+            <Label>Patient ID (auto)</Label>
+            <Input value={form.patientId} readOnly className="bg-muted/40 font-mono text-xs" />
           </div>
           <div>
             <Label>Age</Label>
