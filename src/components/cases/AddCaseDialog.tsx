@@ -17,6 +17,7 @@ export function AddCaseDialog({ onAdd }: Props) {
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({
     caseId: "",
+    patientId: "",
     age: "",
     sex: "F" as "F" | "M",
     weightKg: "",
@@ -33,13 +34,14 @@ export function AddCaseDialog({ onAdd }: Props) {
   const set = (k: keyof typeof form, v: string) => setForm((f) => ({ ...f, [k]: v }));
 
   const handleSubmit = () => {
-    if (!form.caseId || !form.drug || !form.eventPt) {
-      toast({ title: "Missing fields", description: "Case ID, drug, and event are required.", variant: "destructive" });
+    if (!form.caseId || !form.patientId || !form.drug || !form.eventPt) {
+      toast({ title: "Missing fields", description: "Case ID, Patient ID, drug, and event are required.", variant: "destructive" });
       return;
     }
     const newCase: ICSRCase = {
       id: form.caseId,
       patient: {
+        patientId: form.patientId,
         age: Number(form.age) || 0,
         sex: form.sex,
         weightKg: Number(form.weightKg) || 0,
@@ -63,7 +65,7 @@ export function AddCaseDialog({ onAdd }: Props) {
     onAdd(newCase);
     toast({ title: "Case added", description: `${form.caseId} created locally.` });
     setOpen(false);
-    setForm({ caseId: "", age: "", sex: "F", weightKg: "", drug: "", dose: "", indication: "", eventPt: "", soc: "", severity: "Moderate", narrative: "", country: "" });
+    setForm({ caseId: "", patientId: "", age: "", sex: "F", weightKg: "", drug: "", dose: "", indication: "", eventPt: "", soc: "", severity: "Moderate", narrative: "", country: "" });
   };
 
   return (
@@ -80,9 +82,13 @@ export function AddCaseDialog({ onAdd }: Props) {
         </DialogHeader>
 
         <div className="grid grid-cols-2 gap-4 py-2">
-          <div className="col-span-2">
+          <div>
             <Label>Case ID *</Label>
             <Input value={form.caseId} onChange={(e) => set("caseId", e.target.value)} placeholder="ICSR-2024-XXXXX" />
+          </div>
+          <div>
+            <Label>Patient ID *</Label>
+            <Input value={form.patientId} onChange={(e) => set("patientId", e.target.value)} placeholder="PT-100123" />
           </div>
           <div>
             <Label>Age</Label>
