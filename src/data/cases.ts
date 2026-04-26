@@ -21,6 +21,7 @@ export interface MeddraEvent {
 export interface ICSRCase {
   id: string;
   patient: {
+    patientId: string;
     age: number;
     sex: "M" | "F";
     weightKg: number;
