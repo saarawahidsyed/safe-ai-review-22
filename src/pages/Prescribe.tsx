@@ -195,6 +195,16 @@ const Prescribe = () => {
     if (result.interactionAlerts?.length) {
       sections.push({ title: "Interaction alerts", paragraphs: result.interactionAlerts });
     }
+    if (result.dietPlan) {
+      const d = result.dietPlan;
+      const para: string[] = [];
+      if (d.foodsToFavor?.length) para.push(`Foods to favor: ${d.foodsToFavor.join(", ")}.`);
+      if (d.foodsToAvoid?.length) para.push(`Foods to avoid: ${d.foodsToAvoid.join(", ")}.`);
+      if (d.hydration) para.push(`Hydration: ${d.hydration}`);
+      if (d.mealTiming) para.push(`Meal timing: ${d.mealTiming}`);
+      if (d.lifestyleNotes?.length) para.push(`Lifestyle: ${d.lifestyleNotes.join(" • ")}`);
+      sections.push({ title: "Dietary plan", paragraphs: para });
+    }
     sections.push({ title: "Disclaimer", paragraphs: [result.disclaimer] });
 
     downloadPdfReport({
@@ -227,6 +237,36 @@ const Prescribe = () => {
               <div>
                 <h2 className="text-base font-semibold flex items-center gap-2"><Stethoscope className="h-4 w-4 text-primary" />Patient & Condition</h2>
                 <p className="text-xs text-muted-foreground mt-1">Enter the primary disease and any comorbidities. The AI returns drug suggestions, contraindications, and predicted side effects.</p>
+              </div>
+
+              <div className="rounded-md border border-border bg-muted/30 p-3 space-y-2">
+                <div className="flex items-center gap-2">
+                  <UserSearch className="h-3.5 w-3.5 text-primary" />
+                  <Label className="text-xs uppercase tracking-wider text-muted-foreground">Load from existing patient</Label>
+                </div>
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <Select value={patientId || "__none__"} onValueChange={applyPatient}>
+                    <SelectTrigger className="h-9 text-sm">
+                      <SelectValue placeholder="Select Patient ID…" />
+                    </SelectTrigger>
+                    <SelectContent className="max-h-72">
+                      <SelectItem value="__none__">— No patient (manual entry) —</SelectItem>
+                      {patients.map((p) => (
+                        <SelectItem key={p.patient.patientId} value={p.patient.patientId}>
+                          {p.patient.patientId} · {p.patient.sex}, {p.patient.age}y · {p.suspectDrug.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {patientId && (
+                    <Button variant="ghost" size="sm" onClick={() => { setPatientId(""); }} className="text-xs">
+                      Clear patient
+                    </Button>
+                  )}
+                </div>
+                <p className="text-[11px] text-muted-foreground">
+                  Auto-fills age, sex, comorbidities and current medications from the linked ICSR case(s).
+                </p>
               </div>
 
               <div className="grid md:grid-cols-2 gap-4">
