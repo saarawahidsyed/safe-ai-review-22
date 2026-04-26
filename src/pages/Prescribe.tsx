@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { Card } from "@/components/ui/card";
@@ -8,10 +8,12 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
-import { Pill, Sparkles, AlertTriangle, ShieldAlert, Stethoscope, Activity, Loader2, X, Download } from "lucide-react";
+import { Pill, Sparkles, AlertTriangle, ShieldAlert, Stethoscope, Activity, Loader2, X, Download, Apple, UserSearch } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { downloadPdfReport } from "@/lib/pdfExport";
+import { useCasesStore, listPatients, getPatientProfile } from "@/lib/casesStore";
 
 interface SideEffect {
   effect: string;
@@ -28,11 +30,19 @@ interface Recommendation {
   monitoring?: string[];
 }
 interface AvoidItem { drug: string; reason: string }
+interface DietPlan {
+  foodsToFavor: string[];
+  foodsToAvoid: string[];
+  hydration?: string;
+  mealTiming?: string;
+  lifestyleNotes?: string[];
+}
 interface Result {
   recommendations: Recommendation[];
   avoid: AvoidItem[];
   interactionAlerts?: string[];
   summary: string;
+  dietPlan?: DietPlan;
   disclaimer: string;
 }
 
@@ -83,6 +93,9 @@ const lineColor = (l: string) =>
   : "bg-muted text-muted-foreground border-border";
 
 const Prescribe = () => {
+  const { cases } = useCasesStore();
+  const patients = useMemo(() => listPatients(cases), [cases]);
+  const [patientId, setPatientId] = useState<string>("");
   const [disease, setDisease] = useState("");
   const [comorbidities, setComorbidities] = useState<string[]>([]);
   const [meds, setMeds] = useState<string[]>([]);
@@ -91,6 +104,27 @@ const Prescribe = () => {
   const [allergies, setAllergies] = useState("");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<Result | null>(null);
+
+  const applyPatient = (pid: string) => {
+    setPatientId(pid);
+    if (pid === "__none__") {
+      setPatientId("");
+      return;
+    }
+    const profile = getPatientProfile(cases, pid);
+    if (!profile) return;
+    setAge(String(profile.age));
+    setSex(profile.sex);
+    setComorbidities(profile.conditions);
+    setMeds(profile.medications);
+    if (!disease && profile.cases[0]?.suspectDrug?.indication) {
+      setDisease(profile.cases[0].suspectDrug.indication);
+    }
+    toast({
+      title: `Patient ${pid} loaded`,
+      description: `${profile.medications.length} med(s) • ${profile.conditions.length} condition(s)`,
+    });
+  };
 
   const submit = async () => {
     if (!disease.trim()) {
