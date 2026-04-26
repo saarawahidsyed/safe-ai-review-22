@@ -82,6 +82,7 @@ export const cases: ICSRCase[] = [
   {
     id: "ICSR-2024-08412",
     patient: {
+      patientId: "PT-100245",
       age: 78,
       sex: "F",
       weightKg: 62,
@@ -126,6 +127,7 @@ export const cases: ICSRCase[] = [
   {
     id: "ICSR-2024-08510",
     patient: {
+      patientId: "PT-100311",
       age: 54,
       sex: "M",
       weightKg: 98,
@@ -170,6 +172,7 @@ export const cases: ICSRCase[] = [
   {
     id: "ICSR-2024-08623",
     patient: {
+      patientId: "PT-100428",
       age: 67,
       sex: "M",
       weightKg: 88,
